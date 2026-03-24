@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import { ethers } from "ethers";
 import cron from "node-cron";
 import dotenv from "dotenv";
@@ -10,7 +10,11 @@ const MARKET_ABI = [
   "function aiResolve(uint256, bool, string, uint256) external"
 ];
 
-const client   = new Anthropic();
+const client = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
+
 const provider = new ethers.JsonRpcProvider(process.env.SHARDEUM_RPC);
 const wallet   = new ethers.Wallet(process.env.RESOLVER_PRIVATE_KEY, provider);
 const market   = new ethers.Contract(process.env.MARKET_ADDRESS, MARKET_ABI, wallet);
@@ -18,22 +22,22 @@ const market   = new ethers.Contract(process.env.MARKET_ADDRESS, MARKET_ABI, wal
 async function resolveMarket(id, question, category) {
   console.log(`\n[${new Date().toISOString()}] Resolving market ${id}: "${question}"`);
 
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-20250514",
+  const response = await client.chat.completions.create({
+    model: "nvidia/nemotron-3-super-120b-a12b:free",
+    messages: [
+      {
+        role: "system",
+        content: `You are an impartial prediction market resolver. Your job is to determine the factual outcome of a prediction market question. You must respond with ONLY a valid JSON object — no markdown, no preamble, no explanation outside the JSON. Format: {"outcome": true, "confidence": 85, "evidence": "One sentence stating what happened. One sentence citing your source."}. true = YES outcome occurred. false = NO / did not occur. confidence = 0-100 integer.`
+      },
+      {
+        role: "user",
+        content: `Resolve this prediction market question. Category: ${category}. Question: "${question}". Determine the outcome based on current facts and determina YES (true) or NO (false).`
+      }
+    ],
     max_tokens: 1024,
-    tools: [{ type: "web_search_20250305", name: "web_search" }],
-    system: `You are an impartial prediction market resolver. Your job is to determine the factual outcome of a prediction market question using web search. You must respond with ONLY a valid JSON object — no markdown, no preamble, no explanation outside the JSON. Format: {"outcome": true, "confidence": 85, "evidence": "One sentence stating what happened. One sentence citing your source."}. true = YES outcome occurred. false = NO / did not occur. confidence = 0-100 integer.`,
-    messages: [{
-      role: "user",
-      content: `Resolve this prediction market question with current web evidence. Category: ${category}. Question: "${question}". Search for the most recent authoritative information and determine YES (true) or NO (false).`
-    }]
   });
 
-  const text = response.content
-    .filter(b => b.type === "text")
-    .map(b => b.text)
-    .join("");
-
+  const text = response.choices[0].message.content;
   const clean = text.replace(/```json|```/g, "").trim();
   const result = JSON.parse(clean);
 
