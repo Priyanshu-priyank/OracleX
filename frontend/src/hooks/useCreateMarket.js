@@ -14,7 +14,12 @@ export function useCreateMarket() {
       const minStakeWei = ethers.parseEther(minStake.toString());
       const tx     = await c.createMarket(question, category, options, durationHours, minStakeWei);
       setTxHash(tx.hash);
+      
+      // Mock contract returns id directly
+      if (tx.id !== undefined) return tx.id.toString();
+      
       const receipt = await tx.wait();
+      if (!receipt?.logs) return null;
       
       const iface   = c.interface;
       const log     = receipt.logs.find(l => {

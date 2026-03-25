@@ -1,7 +1,3 @@
-import { useState } from "react";
-import { explorerTx } from "../utils/contracts";
-import { ethers } from "ethers";
-
 import { useState, useEffect } from "react";
 import { explorerTx } from "../utils/contracts";
 import { ethers } from "ethers";

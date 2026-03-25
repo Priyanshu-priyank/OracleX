@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { SHARDEUM_CHAIN } from "../utils/contracts";
+import { SHARDEUM_CHAIN, IS_SAFE_MODE } from "../utils/contracts";
 
 export function useWallet() {
   const [address, setAddress]   = useState(null);
@@ -7,6 +7,10 @@ export function useWallet() {
   const [error, setError]       = useState(null);
 
   const connect = useCallback(async () => {
+    if (IS_SAFE_MODE) {
+      setAddress("0x742d...444");
+      return;
+    }
     if (!window.ethereum) {
       setError("MetaMask not found. Please install it.");
       return;

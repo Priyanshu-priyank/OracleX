@@ -28,7 +28,7 @@ export default function CreateMarket() {
   const previewMarket = {
     id: "preview", question: question || "Your prediction question will appear here...",
     category, options, deadline: Math.floor(Date.now() / 1000) + duration * 3600,
-    status: 0, outcomeIndex: 0, aiEvidence: "", pools: options.map(() => "0"), totalPool: "0", createdAt: "0", minStake: ethers.parseEther(minBet || "1000").toString()
+    status: 0, outcomeIndex: 0, aiEvidence: "", shareReserves: options.map(() => "0"), totalSets: "0", createdAt: "0", minStake: ethers.parseEther(minBet || "1000").toString()
   };
 
   const addOption = () => {

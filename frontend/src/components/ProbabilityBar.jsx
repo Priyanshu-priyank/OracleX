@@ -26,7 +26,7 @@ export default function ProbabilityBar({ market, size = "sm" }) {
     <div className="space-y-1.5 w-full">
       <div className="flex justify-between text-[10px] font-black tracking-wider uppercase overflow-hidden gap-2">
         {market.options.map((opt, idx) => {
-          const p = getPercent(pools[idx]);
+          const p = getPercent(idx);
           return (
             <span key={idx} className={idx === 0 ? "text-emerald-500" : idx === 1 ? "text-rose-500" : "text-gray-500"}>
               {opt} {p}%
@@ -36,7 +36,7 @@ export default function ProbabilityBar({ market, size = "sm" }) {
       </div>
       <div className={`w-full rounded-full bg-gray-100 overflow-hidden shadow-inner flex ${size === "lg" ? "h-3" : "h-2"}`}>
         {market.options.map((_, idx) => {
-          const p = getPercent(pools[idx]);
+          const p = getPercent(idx);
           if (p === 0) return null;
           return (
             <div

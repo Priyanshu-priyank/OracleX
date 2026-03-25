@@ -22,12 +22,21 @@ export const SHARDEUM_CHAIN = {
   blockExplorerUrls: ["https://explorer.shardeum.org/"]
 };
 
+import { mockContract } from "./MockContract";
+
+// ← Set VITE_SAFE_MODE=true in .env to run without a real wallet
+export const IS_SAFE_MODE = import.meta.env.VITE_SAFE_MODE === "true";
+
 export function getReadContract() {
+  if (IS_SAFE_MODE) return mockContract;
+  
   const provider = new ethers.JsonRpcProvider("https://api-mezame.shardeum.org");
   return new ethers.Contract(MARKET_ADDRESS, MARKET_ABI, provider);
 }
 
 export async function getWriteContract() {
+  if (IS_SAFE_MODE) return mockContract;
+  
   const provider = new ethers.BrowserProvider(window.ethereum);
   const signer   = await provider.getSigner();
   return new ethers.Contract(MARKET_ADDRESS, MARKET_ABI, signer);

@@ -20,7 +20,7 @@ export default function Home() {
     return catMatch && statusMatch;
   });
 
-  const totalLocked = markets.reduce((sum, m) => sum + BigInt(m.yesPool) + BigInt(m.noPool), 0n);
+  const totalLocked = markets.reduce((sum, m) => sum + BigInt(m.totalSets || "0"), 0n);
   const openCount   = markets.filter(m => m.status === 0).length;
 
   return (
@@ -112,10 +112,10 @@ export default function Home() {
               <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">How OracleX Works</div>
               <div className="space-y-6">
                 {[
-                  ["1", "Create a market", "Ask any yes/no question with a deadline and minimum bet."],
-                  ["2", "Stake SHM", "Bet YES or NO — funds are locked securely on-chain."],
+                  ["1", "Create a market", "Ask any question with custom outcomes and a deadline."],
+                  ["2", "Buy Shares", "Choose an outcome — buy and sell shares at market prices."],
                   ["3", "AI resolves", "OracleX searches the web, stores its verifiable verdict on Shardeum."],
-                  ["4", "Claim rewards", "Winners receive proportional payouts automatically."],
+                  ["4", "Claim rewards", "Winners receive 1 SHM for every winning share held."],
                 ].map(([n, title, desc]) => (
                   <div key={n} className="flex gap-4 group">
                     <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 font-black flex items-center justify-center shrink-0 group-hover:bg-purple-600 group-hover:text-white transition-colors">{n}</div>
