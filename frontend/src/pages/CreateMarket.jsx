@@ -7,12 +7,20 @@ import { CATEGORIES } from "../utils/format";
 import { explorerTx } from "../utils/contracts";
 import { ethers } from "ethers";
 
-const DURATIONS = [
-  { label: "1h", hours: 1 },
+const MACRO_D_LIST = [
   { label: "6h", hours: 6 },
+  { label: "12h", hours: 12 },
   { label: "24h", hours: 24 },
   { label: "3d", hours: 72 },
   { label: "7d", hours: 168 },
+];
+
+const MICRO_D_LIST = [
+  { label: "15m", hours: 0.25 },
+  { label: "30m", hours: 0.5 },
+  { label: "1h", hours: 1 },
+  { label: "2h", hours: 2 },
+  { label: "6h", hours: 6 },
 ];
 
 export default function CreateMarket() {
@@ -22,8 +30,20 @@ export default function CreateMarket() {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["YES", "NO"]);
   const [category, setCategory] = useState("Crypto");
+  const [marketType, setMarketType] = useState("Macro"); // Macro or Micro
   const [duration, setDuration] = useState(24);
   const [minBet, setMinBet] = useState("1000");
+
+  const switchType = (type) => {
+    setMarketType(type);
+    if (type === "Micro") {
+      setDuration(1);
+      setMinBet("10");
+    } else {
+      setDuration(24);
+      setMinBet("1000");
+    }
+  };
 
   const previewMarket = {
     id: "preview",
@@ -60,8 +80,12 @@ export default function CreateMarket() {
       alert("All options must have a label");
       return;
     }
-    if (Number(minBet) < 1000) {
-      alert("Minimum bet must be at least 1000 SHM");
+    if (marketType === "Macro" && Number(minBet) < 1000) {
+      alert("Minimum bet for Macro markets must be at least 1000 SHM");
+      return;
+    }
+    if (marketType === "Micro" && Number(minBet) < 10) {
+      alert("Minimum bet for Micro markets must be at least 10 SHM");
       return;
     }
     const newId = await createMarket(question, category, options, duration, minBet);
@@ -82,6 +106,28 @@ export default function CreateMarket() {
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           <div className="lg:col-span-3 space-y-6 rounded-3xl border border-[var(--ox-border)] bg-[var(--ox-surface)] p-6 sm:p-8">
+            {/* Type toggle */}
+            <div className="flex p-1 rounded-xl bg-[#0b0e11] border border-[var(--ox-border)] w-full max-w-[300px] mb-2">
+              <button
+                type="button"
+                onClick={() => switchType("Macro")}
+                className={`flex-1 py-1.5 text-sm font-bold rounded-lg transition-all ${
+                  marketType === "Macro" ? "bg-[var(--ox-accent)] text-white shadow" : "text-[var(--ox-muted)] hover:text-white"
+                }`}
+              >
+                Macro (≥ 6h)
+              </button>
+              <button
+                type="button"
+                onClick={() => switchType("Micro")}
+                className={`flex-1 py-1.5 text-sm font-bold rounded-lg transition-all ${
+                  marketType === "Micro" ? "bg-[var(--ox-accent)] text-white shadow" : "text-[var(--ox-muted)] hover:text-white"
+                }`}
+              >
+                Micro (≤ 6h)
+              </button>
+            </div>
+
             <div>
               <label className="block text-sm font-bold text-[var(--ox-text)] mb-2">Question</label>
               <textarea
@@ -154,13 +200,13 @@ export default function CreateMarket() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-bold mb-3">Duration</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {DURATIONS.map((d) => (
+                <div className="grid grid-cols-5 gap-2">
+                  {(marketType === "Micro" ? MICRO_D_LIST : MACRO_D_LIST).map((d) => (
                     <button
                       key={d.hours}
                       type="button"
                       onClick={() => setDuration(d.hours)}
-                      className={`rounded-xl py-2.5 text-sm font-bold border ${
+                      className={`rounded-xl py-2.5 text-xs sm:text-sm font-bold border ${
                         duration === d.hours
                           ? "border-[var(--ox-accent)] bg-[var(--ox-accent)]/15 text-white"
                           : "border-[var(--ox-border)] bg-[#0b0e11] text-[var(--ox-muted)]"
@@ -182,7 +228,7 @@ export default function CreateMarket() {
                   className="w-full rounded-xl border border-[var(--ox-border)] bg-[#0b0e11] px-4 py-2.5 font-mono font-bold text-[var(--ox-text)] focus:outline-none focus:ring-2 focus:ring-[var(--ox-accent)]/40"
                 />
                 <p className="text-xs text-amber-200/80 mt-2">
-                  You will send this amount once to seed the pool (required by the contract).
+                  Min limit: {marketType === "Macro" ? "1000 SHM" : "10 SHM"}. Sent once as initial liquidity.
                 </p>
               </div>
             </div>
@@ -206,7 +252,12 @@ export default function CreateMarket() {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={loading || !question.trim() || Number(minBet) < 1000}
+              disabled={
+                loading || 
+                !question.trim() || 
+                (marketType === "Macro" && Number(minBet) < 1000) ||
+                (marketType === "Micro" && Number(minBet) < 10)
+              }
               className="w-full rounded-2xl bg-[var(--ox-accent)] py-4 text-lg font-bold text-white hover:opacity-95 disabled:opacity-40"
             >
               {loading ? "Submitting…" : "Create market"}
