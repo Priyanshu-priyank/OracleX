@@ -121,6 +121,30 @@ export default function Home() {
             <MarketCard key={m.id} market={m} />
           ))}
         </div>
+
+        <div className="rounded-2xl border border-[var(--ox-border)] bg-[var(--ox-surface)] p-6 sm:p-8">
+          <div className="text-xs font-bold text-[var(--ox-muted)] uppercase tracking-widest mb-6">
+            How OracleX works
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              ["1", "Create a market", "Ask any question with custom outcomes and a deadline."],
+              ["2", "Buy shares", "Choose an outcome — buy and sell shares at market prices."],
+              ["3", "AI resolves", "OracleX gathers evidence and stores its verdict on-chain."],
+              ["4", "Claim rewards", "Winners redeem value for winning shares after resolution."],
+            ].map(([n, title, desc]) => (
+              <div key={n} className="flex gap-4">
+                <div className="w-8 h-8 rounded-full bg-[var(--ox-accent)]/20 text-[var(--ox-accent)] font-black flex items-center justify-center shrink-0 text-sm">
+                  {n}
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-[var(--ox-text)] mb-0.5">{title}</div>
+                  <div className="text-xs text-[var(--ox-muted)] leading-relaxed">{desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

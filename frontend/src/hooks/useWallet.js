@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, createContext, useContext, createElement } from "react";
-import { SHARDEUM_CHAIN } from "../utils/contracts";
+import { SHARDEUM_CHAIN, IS_SAFE_MODE } from "../utils/contracts";
 
 const WalletContext = createContext(null);
 
@@ -9,22 +9,26 @@ export function WalletProvider({ children }) {
   const [error, setError]     = useState(null);
 
   useEffect(() => {
-    if (window.ethereum) {
-      window.ethereum.request({ method: "eth_accounts" })
-        .then(accounts => {
-          if (accounts.length > 0) setAddress(accounts[0]);
-        })
-        .catch(console.error);
+    if (IS_SAFE_MODE || !window.ethereum) return;
 
-      window.ethereum.on("accountsChanged", accounts => {
+    window.ethereum.request({ method: "eth_accounts" })
+      .then(accounts => {
         if (accounts.length > 0) setAddress(accounts[0]);
-        else setAddress(null);
-      });
-      window.ethereum.on("chainChanged", () => window.location.reload());
-    }
+      })
+      .catch(console.error);
+
+    window.ethereum.on("accountsChanged", accounts => {
+      if (accounts.length > 0) setAddress(accounts[0]);
+      else setAddress(null);
+    });
+    window.ethereum.on("chainChanged", () => window.location.reload());
   }, []);
 
   const connect = useCallback(async () => {
+    if (IS_SAFE_MODE) {
+      setAddress("0x742d...444");
+      return;
+    }
     if (!window.ethereum) {
       setError("MetaMask not found. Please install it.");
       return;
@@ -46,7 +50,7 @@ export function WalletProvider({ children }) {
       }
       const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
       setAddress(accounts[0]);
-    } catch (err) { setError(err.message); } 
+    } catch (err) { setError(err.message); }
     finally { setLoading(false); }
   }, []);
 

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useWallet } from "../hooks/useWallet";
 import { shortenAddress } from "../utils/format";
+import { IS_SAFE_MODE } from "../utils/contracts";
 
 export default function Navbar() {
   const { address, connect, loading } = useWallet();
@@ -29,6 +30,14 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
+        {IS_SAFE_MODE && (
+          <span
+            className="text-[10px] font-black uppercase tracking-wide text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/25"
+            title="Using mock chain data (VITE_SAFE_MODE)"
+          >
+            Safe mode
+          </span>
+        )}
         {address ? (
           <Link
             to="/profile"

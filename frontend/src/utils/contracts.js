@@ -1,8 +1,12 @@
 import { ethers } from "ethers";
+import { mockContract } from "./MockContract";
 
 // ← Loaded from .env (VITE_MARKET_ADDRESS)
 export const MARKET_ADDRESS = import.meta.env.VITE_MARKET_ADDRESS;
 export const VITE_NFT_ADDRESS = import.meta.env.VITE_NFT_ADDRESS;
+
+// ← Set VITE_SAFE_MODE=true in .env to run without a real wallet
+export const IS_SAFE_MODE = import.meta.env.VITE_SAFE_MODE === "true";
 
 export const MARKET_ABI = [
   "function marketCount() view returns (uint256)",
@@ -29,10 +33,13 @@ export function getRPCProvider() {
 }
 
 export function getReadContract() {
+  if (IS_SAFE_MODE) return mockContract;
   return new ethers.Contract(MARKET_ADDRESS, MARKET_ABI, getRPCProvider());
 }
 
 export async function getWriteContract() {
+  if (IS_SAFE_MODE) return mockContract;
+
   const provider = new ethers.BrowserProvider(window.ethereum);
   const signer   = await provider.getSigner();
   return new ethers.Contract(MARKET_ADDRESS, MARKET_ABI, signer);

@@ -17,6 +17,10 @@ export function useCreateMarket() {
         value: minStakeWei,
       });
       setTxHash(tx.hash);
+      
+      // Mock contract returns id directly
+      if (tx.id !== undefined) return tx.id.toString();
+      
       const receipt = await tx.wait();
 
       let newId = null;
