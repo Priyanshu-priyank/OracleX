@@ -3,12 +3,13 @@ import Navbar from "../components/Navbar";
 import MarketCard from "../components/MarketCard";
 import { useMarkets } from "../hooks/useMarkets";
 import { useNavigate } from "react-router-dom";
-import { CATEGORIES } from "../utils/format";
+import { CATEGORIES, isMicroMarket } from "../utils/format";
 
 export default function Home() {
   const { markets, loading, error } = useMarkets();
   const [category, setCategory] = useState("All");
   const [statusFilter, setStatus] = useState("All");
+  const [betType, setBetType] = useState("All");
   const navigate = useNavigate();
 
   const filtered = markets.filter((m) => {
@@ -18,7 +19,13 @@ export default function Home() {
       (statusFilter === "Open" && m.status === 0) ||
       (statusFilter === "Resolved" && m.status === 1) ||
       (statusFilter === "Disputed" && m.status === 2);
-    return catMatch && statusMatch;
+      
+    const isMicro = isMicroMarket(m);
+    const typeMatch = betType === "All" || 
+      (betType === "Micro" && isMicro) || 
+      (betType === "Macro" && !isMicro);
+
+    return catMatch && statusMatch && typeMatch;
   });
 
   const totalLocked = markets.reduce((sum, m) => sum + BigInt(m.totalSets || "0"), 0n);
@@ -77,22 +84,41 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Status */}
-        <div className="flex flex-wrap gap-2">
-          {["All", "Open", "Resolved", "Disputed"].map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setStatus(s)}
-              className={`rounded-lg px-4 py-2 text-sm font-bold border transition-colors ${
-                statusFilter === s
-                  ? "border-[var(--ox-border)] bg-[var(--ox-surface)] text-[var(--ox-text)]"
-                  : "border-transparent text-[var(--ox-muted)] hover:text-[var(--ox-text)]"
-              }`}
-            >
-              {s}
-            </button>
-          ))}
+        {/* Status and Type Filters */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-2">
+            {["All", "Open", "Resolved", "Disputed"].map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setStatus(s)}
+                className={`rounded-lg px-4 py-2 text-sm font-bold border transition-colors ${
+                  statusFilter === s
+                    ? "border-[var(--ox-border)] bg-[var(--ox-surface)] text-[var(--ox-text)]"
+                    : "border-transparent text-[var(--ox-muted)] hover:text-[var(--ox-text)]"
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-1 p-1 rounded-xl bg-[var(--ox-surface)] border border-[var(--ox-border)]">
+            {["All", "Macro", "Micro"].map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setBetType(t)}
+                className={`rounded-lg px-4 py-1.5 text-sm font-bold transition-all ${
+                  betType === t
+                    ? "bg-[#0b0e11] text-[var(--ox-text)] shadow flex-1"
+                    : "text-[var(--ox-muted)] hover:text-[var(--ox-text)]"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
         </div>
 
         {loading && (

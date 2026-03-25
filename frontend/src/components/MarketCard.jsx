@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import ProbabilityBar from "./ProbabilityBar";
-import { timeLeft, formatSHM, statusLabel } from "../utils/format";
+import { timeLeft, formatSHM, statusLabel, isMicroMarket } from "../utils/format";
 
 const STATUS_STYLES = {
   0: "text-emerald-400 border-emerald-500/40 bg-emerald-500/10",
@@ -20,6 +20,7 @@ const CATEGORY_STYLES = {
 export default function MarketCard({ market }) {
   const navigate = useNavigate();
   const total = market.totalSets || "0";
+  const isMicro = isMicroMarket(market);
 
   return (
     <div
@@ -30,13 +31,21 @@ export default function MarketCard({ market }) {
       className="rounded-2xl border border-[var(--ox-border)] bg-[var(--ox-surface)] p-5 space-y-4 cursor-pointer hover:border-[var(--ox-accent)]/50 transition-all group"
     >
       <div className="flex justify-between items-start gap-2">
-        <span
-          className={`text-xs font-bold px-2.5 py-1 rounded-md border ${
-            CATEGORY_STYLES[market.category] ?? CATEGORY_STYLES.Other
-          }`}
-        >
-          {market.category}
-        </span>
+        <div className="flex gap-2">
+          <span
+            className={`text-xs font-bold px-2.5 py-1 rounded-md border ${
+              CATEGORY_STYLES[market.category] ?? CATEGORY_STYLES.Other
+            }`}
+          >
+            {market.category}
+          </span>
+          <span className={`text-[10px] uppercase tracking-widest font-black px-2 py-1 rounded-md border ${
+            isMicro ? "text-fuchsia-300 border-fuchsia-500/30 bg-fuchsia-500/10" 
+                    : "text-blue-300 border-blue-500/30 bg-blue-500/10"
+          }`}>
+            {isMicro ? "Micro" : "Macro"}
+          </span>
+        </div>
         <span
           className={`text-xs font-bold px-2.5 py-1 rounded-md border ${STATUS_STYLES[market.status] ?? STATUS_STYLES[0]}`}
         >

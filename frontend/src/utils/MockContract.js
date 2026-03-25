@@ -108,6 +108,12 @@ class MockContract {
     return { id: BigInt(id), wait: async () => ({}) };
   }
 
+  async deleteMarket(id) {
+    this.data.markets = this.data.markets.filter(x => x.id !== id.toString());
+    this._save();
+    return { hash: "mock_tx_delete_" + Date.now(), wait: async () => ({}) };
+  }
+
   async buyShares(id, optionIndex, { value }) {
     const m = this.data.markets.find(x => x.id === id.toString());
     const amt = BigInt(value);

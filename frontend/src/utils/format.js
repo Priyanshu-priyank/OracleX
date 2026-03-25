@@ -25,4 +25,13 @@ export function statusLabel(s) {
   return ["Open", "Resolved", "Disputed"][Number(s)] ?? "Unknown";
 }
 
+// A market is "micro" if its total lifetime (deadline - createdAt) is <= 6 hours
+export function isMicroMarket(market) {
+  const created = Number(market.createdAt || 0);
+  const deadline = Number(market.deadline || 0);
+  if (!created || !deadline) return false;
+  const durationHours = (deadline - created) / 3600;
+  return durationHours <= 6;
+}
+
 export const CATEGORIES = ["Crypto", "Sports", "Politics", "Finance", "Daily Life", "Other"];
