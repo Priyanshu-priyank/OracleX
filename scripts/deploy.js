@@ -5,15 +5,13 @@ async function main() {
   console.log("Deploying with:", deployer.address);
 
   // 1. Deploy Reputation NFT
-  const NFTFactory = await hre.ethers.getContractFactory("ReputationNFT");
-  const NFT = await NFTFactory.deploy();
+  const NFT = await hre.ethers.deployContract("ReputationNFT");
   await NFT.waitForDeployment();
   const nftAddr = await NFT.getAddress();
   console.log("ReputationNFT:", nftAddr);
 
   // 2. Deploy PredictionMarket — CPMM constructor only takes aiResolver
-  const MarketFactory = await hre.ethers.getContractFactory("PredictionMarket");
-  const Market = await MarketFactory.deploy(deployer.address);
+  const Market = await hre.ethers.deployContract("PredictionMarket", [deployer.address]);
   await Market.waitForDeployment();
   const marketAddr = await Market.getAddress();
   console.log("PredictionMarket:", marketAddr);

@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { explorerTx } from "../utils/contracts";
+import { explorerTx, IS_SAFE_MODE } from "../utils/contracts";
 import { ethers } from "ethers";
 import { formatSHM } from "../utils/format";
 
 const PRECISION = BigInt(1e18);
 
-export default function StakeModal({ market, onBuy, onSell, userShares, initialSide, txPending, txHash, error, onClose }) {
+export default function StakeModal({ market, onBuy, onSell, userShares, walletBalance, initialSide, txPending, txHash, error, onClose }) {
   const [tab, setTab] = useState("buy"); // buy or sell
   const [amount, setAmount] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(initialSide !== null ? initialSide : null);
@@ -90,13 +90,18 @@ export default function StakeModal({ market, onBuy, onSell, userShares, initialS
 
         {/* Input */}
         <div className="mb-6">
-          <label className="text-sm font-black text-[var(--ox-text)] mb-2 block flex justify-between uppercase tracking-tight">
+          <label className="text-sm font-black text-[var(--ox-text)] mb-2 flex justify-between uppercase tracking-tight">
             {tab === "buy" ? "Investment Amount" : "Shares to Sell"}
             {tab === "sell" && selectedIndex !== null && (
               <button type="button" onClick={() => setAmount(ethers.formatEther(userShares[selectedIndex]))} className="text-indigo-300 text-[10px] font-black hover:underline px-2 py-0.5 rounded-md bg-indigo-500/15">MAX: {formatSHM(userShares[selectedIndex])}</button>
             )}
             {tab === "buy" && <span className="text-[10px] text-[var(--ox-muted)]">Min: {minBet} SHM</span>}
           </label>
+          {IS_SAFE_MODE && tab === "buy" && (
+            <div className="mb-2 text-xs font-bold text-amber-300">
+              Mock wallet balance: {formatSHM(walletBalance || "0")} SHM
+            </div>
+          )}
           <div className="relative">
             <input
               type="number"
@@ -126,7 +131,7 @@ export default function StakeModal({ market, onBuy, onSell, userShares, initialS
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={selectedIndex === null || !amount || txPending || (tab === "buy" && Number(amount) < Number(minBet)) || (tab === "sell" && selectedIndex !== null && ethers.parseEther(amount || "0") > BigInt(userShares[selectedIndex]))}
+          disabled={selectedIndex === null || !amount || txPending || (tab === "buy" && Number(amount) < Number(minBet)) || (tab === "buy" && IS_SAFE_MODE && ethers.parseEther(amount || "0") > BigInt(walletBalance || "0")) || (tab === "sell" && selectedIndex !== null && ethers.parseEther(amount || "0") > BigInt(userShares[selectedIndex]))}
           className={`w-full py-5 ${tab === "buy" ? "bg-gradient-to-r from-emerald-600 to-teal-500 shadow-emerald-500/30" : "bg-gradient-to-r from-purple-600 to-indigo-500 shadow-purple-500/30"} text-white rounded-2xl font-black text-xl hover:shadow-lg transition-all disabled:opacity-50 transform hover:-translate-y-0.5 uppercase tracking-wide`}
         >
           {txPending ? "Processing..." : tab === "buy" ? "Buy Outcome" : "Sell Outcome"}

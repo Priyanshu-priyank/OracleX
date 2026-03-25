@@ -21,11 +21,11 @@ export const MARKET_ABI = [
 ];
 
 export const SHARDEUM_CHAIN = {
-  chainId:         "0x1FB7",   // 8119 in hex for Mezame Testnet
-  chainName:       "Shardeum Mezame Testnet",
+  chainId:         "0x1FE2",   // 8082 in hex for Shardeum Sphinx Testnet
+  chainName:       "Shardeum Sphinx Testnet",
   nativeCurrency:  { name: "SHM", symbol: "SHM", decimals: 18 },
-  rpcUrls:         ["https://api-mezame.shardeum.org"],
-  blockExplorerUrls: ["https://explorer.shardeum.org/"]
+  rpcUrls:         ["https://sphinx.shardeum.org"],
+  blockExplorerUrls: ["https://explorer-sphinx.shardeum.org/"]
 };
 
 export function getRPCProvider() {
@@ -46,9 +46,9 @@ export async function getWriteContract() {
 }
 
 export function explorerTx(hash) {
-  return `https://explorer.shardeum.org/transaction/${hash}`;
+  return `https://explorer-sphinx.shardeum.org/transaction/${hash}`;
 }
 
 export function explorerAddr(addr) {
-  return `https://explorer.shardeum.org/account/${addr}`;
+  return `https://explorer-sphinx.shardeum.org/account/${addr}`;
 }

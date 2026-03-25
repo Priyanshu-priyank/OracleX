@@ -18,7 +18,7 @@ export default function MarketDetail() {
   const navigate = useNavigate();
   const [showStake, setShowStake] = useState(false);
   const [initialSide, setInitialSide] = useState(null);
-  const { market, userShares, loading, txPending, txHash, error, buyShares, sellShares, claimReward, deleteMarket } = useMarket(id);
+  const { market, userShares, walletBalance, loading, txPending, txHash, error, buyShares, sellShares, claimReward } = useMarket(id);
 
   if (loading) return <div className="min-h-screen bg-[var(--ox-bg)]"><Navbar /><div className="flex items-center justify-center h-[60vh] text-[var(--ox-muted)]">Loading…</div></div>;
   if (!market) return <div className="min-h-screen bg-[var(--ox-bg)]"><Navbar /><div className="flex items-center justify-center h-[60vh] text-[var(--ox-muted)]">Market not found.</div></div>;
@@ -37,6 +37,7 @@ export default function MarketDetail() {
           onBuy={buyShares}
           onSell={sellShares}
           userShares={userShares}
+          walletBalance={walletBalance}
           initialSide={initialSide}
           txPending={txPending}
           txHash={txHash}
@@ -53,10 +54,10 @@ export default function MarketDetail() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             All Markets
           </button>
-          
+
           {IS_SAFE_MODE && address && address.toLowerCase() === (market.creator || "").toLowerCase() && (
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={async () => {
                 if (window.confirm("Are you sure you want to delete this market? This is only possible in Safe Mode.")) {
                   const success = await deleteMarket();
@@ -115,6 +116,11 @@ export default function MarketDetail() {
                 <h2 className="text-xl font-extrabold">Trade shares</h2>
                 <div className="text-sm font-bold text-indigo-200 bg-indigo-500/15 border border-indigo-500/30 px-3 py-1 rounded-lg">Min: {ethers.formatEther(market.minStake || "0")} SHM</div>
               </div>
+              {IS_SAFE_MODE && (
+                <div className="text-sm font-bold border border-amber-500/30 rounded-xl p-3 text-amber-100 bg-amber-500/10">
+                  Mock wallet balance: {formatSHM(walletBalance || "0")} SHM
+                </div>
+              )}
 
               {userShares && userShares.some(s => BigInt(s) > 0n) && (
                 <div className="text-sm font-bold border border-indigo-500/30 rounded-xl p-4 text-indigo-100 bg-indigo-500/10 space-y-2">

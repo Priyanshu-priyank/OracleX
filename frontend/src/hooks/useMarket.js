@@ -1,19 +1,20 @@
 import { useState, useEffect } from "react";
-import { getReadContract, getWriteContract } from "../utils/contracts";
+import { getReadContract, getWriteContract, IS_SAFE_MODE } from "../utils/contracts";
 import { ethers } from "ethers";
 
 export function useMarket(id) {
   const CACHE_KEY = `oraclex_market_${id}`;
 
-  const [market,     setMarket]     = useState(() => {
+  const [market, setMarket] = useState(() => {
     const cached = localStorage.getItem(CACHE_KEY);
     return cached ? JSON.parse(cached) : null;
   });
   const [userShares, setUserShares] = useState([]);
-  const [loading,    setLoading]    = useState(!market);
-  const [txPending,  setTxPending]  = useState(false);
-  const [txHash,     setTxHash]     = useState(null);
-  const [error,      setError]      = useState(null);
+  const [loading, setLoading] = useState(!market);
+  const [txPending, setTxPending] = useState(false);
+  const [txHash, setTxHash] = useState(null);
+  const [error, setError] = useState(null);
+  const [walletBalance, setWalletBalance] = useState("0");
 
   useEffect(() => {
     if (!id) return;
@@ -22,14 +23,14 @@ export function useMarket(id) {
         const c = getReadContract();
         const m = await c.getMarket(id);
         const data = {
-          id: m.id.toString(), 
-          question: m.question, 
+          id: m.id.toString(),
+          question: m.question,
           category: m.category,
           options: m.options,
-          deadline: m.deadline.toString(), 
+          deadline: m.deadline.toString(),
           creator: m.creator,
-          status: Number(m.status), 
-          outcomeIndex: Number(m.outcomeIndex), 
+          status: Number(m.status),
+          outcomeIndex: Number(m.outcomeIndex),
           aiEvidence: m.aiEvidence,
           shareReserves: m.shareReserves.map(p => p.toString()),
           totalSets: m.totalSets.toString(),
@@ -39,12 +40,19 @@ export function useMarket(id) {
         setMarket(data);
         localStorage.setItem(CACHE_KEY, JSON.stringify(data));
 
-        if (window.ethereum) {
-          const provider  = new ethers.BrowserProvider(window.ethereum);
-          const accounts  = await provider.listAccounts();
+        if (IS_SAFE_MODE) {
+          const mockUser = "0x742d...444";
+          const balances = await c.getUserShares(id, mockUser);
+          setUserShares(balances.map((s) => s.toString()));
+          const wallet = await c.getWalletBalance(mockUser);
+          setWalletBalance(wallet.toString());
+        } else if (window.ethereum) {
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const accounts = await provider.listAccounts();
           if (accounts.length > 0) {
-            const balances = await c.getUserShares(id, accounts[0].address);
-            setUserShares(balances.map(s => s.toString()));
+            const user = accounts[0].address;
+            const balances = await c.getUserShares(id, user);
+            setUserShares(balances.map((s) => s.toString()));
           }
         }
       } catch (err) { setError(err.message); }
@@ -58,10 +66,22 @@ export function useMarket(id) {
   async function buyShares(optionIndex, amountEth) {
     setTxPending(true); setError(null); setTxHash(null);
     try {
-      const c  = await getWriteContract();
+      const c = await getWriteContract();
       const tx = await c.buyShares(id, optionIndex, { value: ethers.parseEther(amountEth) });
       setTxHash(tx.hash);
       await tx.wait();
+      const m = await c.getMarket(id);
+      setMarket((prev) => prev ? {
+        ...prev,
+        shareReserves: m.shareReserves.map((p) => p.toString()),
+        totalSets: m.totalSets.toString(),
+      } : prev);
+      if (IS_SAFE_MODE) {
+        const balances = await c.getUserShares(id, "0x742d...444");
+        setUserShares(balances.map((s) => s.toString()));
+        const wallet = await c.getWalletBalance("0x742d...444");
+        setWalletBalance(wallet.toString());
+      }
     } catch (err) { setError(err.message); }
     finally { setTxPending(false); }
   }
@@ -69,10 +89,22 @@ export function useMarket(id) {
   async function sellShares(optionIndex, amountShares) {
     setTxPending(true); setError(null); setTxHash(null);
     try {
-      const c  = await getWriteContract();
+      const c = await getWriteContract();
       const tx = await c.sellShares(id, optionIndex, amountShares);
       setTxHash(tx.hash);
       await tx.wait();
+      const m = await c.getMarket(id);
+      setMarket((prev) => prev ? {
+        ...prev,
+        shareReserves: m.shareReserves.map((p) => p.toString()),
+        totalSets: m.totalSets.toString(),
+      } : prev);
+      if (IS_SAFE_MODE) {
+        const balances = await c.getUserShares(id, "0x742d...444");
+        setUserShares(balances.map((s) => s.toString()));
+        const wallet = await c.getWalletBalance("0x742d...444");
+        setWalletBalance(wallet.toString());
+      }
     } catch (err) { setError(err.message); }
     finally { setTxPending(false); }
   }
@@ -80,27 +112,19 @@ export function useMarket(id) {
   async function claimReward() {
     setTxPending(true); setError(null); setTxHash(null);
     try {
-      const c  = await getWriteContract();
+      const c = await getWriteContract();
       const tx = await c.claimReward(id);
       setTxHash(tx.hash);
       await tx.wait();
+      if (IS_SAFE_MODE) {
+        const balances = await c.getUserShares(id, "0x742d...444");
+        setUserShares(balances.map((s) => s.toString()));
+        const wallet = await c.getWalletBalance("0x742d...444");
+        setWalletBalance(wallet.toString());
+      }
     } catch (err) { setError(err.message); }
     finally { setTxPending(false); }
   }
 
-  async function deleteMarket() {
-    setTxPending(true); setError(null); setTxHash(null);
-    try {
-      const c  = await getWriteContract();
-      if (!c.deleteMarket) throw new Error("Delete is only supported in Safe Mode");
-      const tx = await c.deleteMarket(id);
-      setTxHash(tx.hash);
-      await tx.wait();
-      localStorage.removeItem(CACHE_KEY);
-      return true;
-    } catch (err) { setError(err.message); return false; }
-    finally { setTxPending(false); }
-  }
-
-  return { market, userShares, loading, txPending, txHash, error, buyShares, sellShares, claimReward, deleteMarket };
+  return { market, userShares, walletBalance, loading, txPending, txHash, error, buyShares, sellShares, claimReward };
 }

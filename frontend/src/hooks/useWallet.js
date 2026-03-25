@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, createContext, useContext, createElement } from "react";
-import { SHARDEUM_CHAIN, IS_SAFE_MODE } from "../utils/contracts";
+import { SHARDEUM_CHAIN, IS_SAFE_MODE, getReadContract } from "../utils/contracts";
 
 const WalletContext = createContext(null);
 
@@ -7,9 +7,26 @@ export function WalletProvider({ children }) {
   const [address, setAddress] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState(null);
+  const [mockBalance, setMockBalance] = useState("0");
 
   useEffect(() => {
-    if (IS_SAFE_MODE || !window.ethereum) return;
+    if (IS_SAFE_MODE) {
+      const mockAddress = "0x742d...444";
+      setAddress(mockAddress);
+      const load = async () => {
+        try {
+          const contract = getReadContract();
+          const bal = await contract.getWalletBalance(mockAddress);
+          setMockBalance(bal.toString());
+        } catch {
+          setMockBalance("0");
+        }
+      };
+      load();
+      const interval = setInterval(load, 3000);
+      return () => clearInterval(interval);
+    }
+    if (!window.ethereum) return;
 
     window.ethereum.request({ method: "eth_accounts" })
       .then(accounts => {
@@ -58,7 +75,7 @@ export function WalletProvider({ children }) {
 
   return createElement(
     WalletContext.Provider,
-    { value: { address, connect, disconnect, loading, error } },
+    { value: { address, connect, disconnect, loading, error, mockBalance } },
     children
   );
 }
