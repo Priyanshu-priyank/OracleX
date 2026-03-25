@@ -1,6 +1,6 @@
 # OracleX — Decentralized Prediction Market on Shardeum
 
-> Polymarket/Kalshi-style prediction markets with an **AI oracle** (Claude) that
+> Polymarket/Kalshi-style prediction markets with an **AI oracle** (OracleX) that
 > stores its verdict permanently on-chain. No token-weighted voting. No manipulation.
 
 ---
@@ -132,7 +132,7 @@ Or just click **"Switch to Shardeum"** in the app — it adds the network automa
 - Pool sizes + min bet
 - **Bet modal** — validates ₹1000 minimum, quick-pick amounts
 - Estimated payout calculator (−2% fee)
-- **AI Oracle verdict panel** — shows Claude's 2-sentence reasoning stored on-chain
+- **AI Oracle verdict panel** — shows OracleX's 2-sentence reasoning stored on-chain
 - **Dispute button** — raises `raiseDispute()` tx if outcome seems wrong
 
 ### Wallet
@@ -169,7 +169,7 @@ Or just click **"Switch to Shardeum"** in the app — it adds the network automa
 > "Most prediction markets use either a centralized team or token-weighted voting to resolve outcomes.
 > In March 2025, a single actor with 25% of UMA tokens manipulated a $7M Polymarket contract.
 >
-> OracleX replaces the oracle with an AI agent. When the deadline passes, Claude searches the web,
+> OracleX replaces the oracle with an AI agent. When the deadline passes, OracleX searches the web,
 > determines the outcome, and stores its 2-sentence reasoning **permanently** in this transaction.
 > Anyone can open the block explorer and read WHY a market was resolved.
 >

@@ -19,7 +19,7 @@ const CATEGORY_COLORS = {
 
 export default function MarketCard({ market }) {
   const navigate = useNavigate();
-  const total    = market.totalPool || "0";
+  const total    = market.totalSets || "0";
 
   return (
     <div

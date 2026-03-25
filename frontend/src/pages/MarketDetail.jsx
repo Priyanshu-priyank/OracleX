@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import ProbabilityBar from "../components/ProbabilityBar";
 import StakeModal from "../components/StakeModal";
 import VerdictPanel from "../components/VerdictPanel";
+import CommunityThread from "../components/CommunityThread";
 import { useMarket } from "../hooks/useMarket";
 import { timeLeft, formatSHM, shortenAddress, statusLabel } from "../utils/format";
 import { explorerTx, explorerAddr } from "../utils/contracts";
@@ -13,12 +14,13 @@ export default function MarketDetail() {
   const { id }         = useParams();
   const navigate       = useNavigate();
   const [showStake, setShowStake] = useState(false);
-  const { market, userStakes, loading, txPending, txHash, error, placeStake, claimReward, raiseDispute } = useMarket(id);
+  const [initialSide, setInitialSide] = useState(null);
+  const { market, userShares, loading, txPending, txHash, error, buyShares, sellShares, claimReward, raiseDispute } = useMarket(id);
 
   if (loading) return <div className="min-h-screen bg-gray-50/50"><Navbar /><div className="flex items-center justify-center h-[60vh] text-gray-400 font-medium">Loading market data...</div></div>;
   if (!market) return <div className="min-h-screen bg-gray-50/50"><Navbar /><div className="flex items-center justify-center h-[60vh] text-gray-400 font-medium">Market not found.</div></div>;
 
-  const total = (BigInt(market.yesPool) + BigInt(market.noPool)).toString();
+  const total = market.totalSets || "0";
   const isOpen = market.status === 0 && Date.now() < Number(market.deadline) * 1000;
 
   return (
@@ -29,11 +31,14 @@ export default function MarketDetail() {
       {showStake && (
         <StakeModal
           market={market}
-          onStake={placeStake}
+          onBuy={buyShares}
+          onSell={sellShares}
+          userShares={userShares}
+          initialSide={initialSide}
           txPending={txPending}
           txHash={txHash}
           error={error}
-          onClose={() => setShowStake(false)}
+          onClose={() => { setShowStake(false); setInitialSide(null); }}
         />
       )}
 
@@ -90,17 +95,19 @@ export default function MarketDetail() {
                 <div className="text-sm font-bold text-purple-600 bg-purple-50 px-3 py-1 rounded-lg">Min Bet: {ethers.formatEther(market.minStake || "1000000000000000000000")} SHM</div>
               </div>
               
-              {userStakes && userStakes.some(s => BigInt(s) > 0n) && (
+              {userShares && userShares.some(s => BigInt(s) > 0n) && (
                 <div className="text-sm font-bold bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-indigo-800 space-y-2">
                   <div className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    Your current stakes:
+                    Your current shares:
                   </div>
                   <div className="pl-7 space-y-1">
-                    {userStakes.map((s, i) => BigInt(s) > 0n ? (
+                    {userShares.map((s, i) => BigInt(s) > 0n ? (
                       <div key={i} className="flex justify-between">
                         <span>{market.options[i]}</span>
-                        <span>{formatSHM(s)} SHM</span>
+                        <div className="flex gap-2">
+                          <span>{formatSHM(s)} Shares</span>
+                        </div>
                       </div>
                     ) : null)}
                   </div>
@@ -109,7 +116,7 @@ export default function MarketDetail() {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {market.options.map((opt, idx) => (
-                  <button key={idx} onClick={() => setShowStake(true)} className={`py-5 bg-gradient-to-br ${idx === 0 ? "from-emerald-400 to-emerald-500 shadow-emerald-500/20" : idx === 1 ? "from-rose-400 to-rose-500 shadow-rose-500/20" : "from-purple-500 to-indigo-600 shadow-purple-500/20"} text-white rounded-2xl font-black text-xl hover:shadow-lg transition-all transform hover:-translate-y-1 uppercase`}>{opt}</button>
+                  <button key={idx} onClick={() => { setInitialSide(idx); setShowStake(true); }} className={`py-5 bg-gradient-to-br ${idx === 0 ? "from-emerald-400 to-emerald-500 shadow-emerald-500/20" : idx === 1 ? "from-rose-400 to-rose-500 shadow-rose-500/20" : "from-purple-500 to-indigo-600 shadow-purple-500/20"} text-white rounded-2xl font-black text-xl hover:shadow-lg transition-all transform hover:-translate-y-1 uppercase`}>{opt}</button>
                 ))}
               </div>
               <p className="text-sm font-medium text-gray-500 text-center flex items-center justify-center gap-1">
@@ -124,7 +131,7 @@ export default function MarketDetail() {
                 onClaim={claimReward}
                 txPending={txPending}
                 txHash={txHash}
-                userStakes={userStakes}
+                userShares={userShares}
               />
               <div className="pt-6 border-t border-gray-100 flex justify-end">
                  <button onClick={raiseDispute} disabled={txPending} className="text-sm font-bold text-orange-600 hover:text-orange-700 px-4 py-2 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors flex items-center gap-1">
@@ -150,6 +157,11 @@ export default function MarketDetail() {
               <p className="text-sm font-medium text-orange-600">The AI outcome has been challenged by the community. Resolution is pending.</p>
             </div>
           )}
+        </div>
+
+        {/* Community Thread */}
+        <div className="pt-4 border-t border-gray-100">
+          <CommunityThread marketId={id} />
         </div>
       </div>
     </div>

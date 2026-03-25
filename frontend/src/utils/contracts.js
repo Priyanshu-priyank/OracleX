@@ -5,13 +5,13 @@ export const MARKET_ADDRESS = import.meta.env.VITE_MARKET_ADDRESS;
 
 export const MARKET_ABI = [
   "function marketCount() view returns (uint256)",
-  "function getAllMarkets() view returns (tuple(uint256 id, string question, string category, string[] options, uint256 deadline, address creator, uint8 status, uint256 outcomeIndex, string aiEvidence, uint256[] pools, uint256 totalPool, uint256 createdAt, uint256 minStake)[])",
-  "function getMarket(uint256) view returns (tuple(uint256 id, string question, string category, string[] options, uint256 deadline, address creator, uint8 status, uint256 outcomeIndex, string aiEvidence, uint256[] pools, uint256 totalPool, uint256 createdAt, uint256 minStake))",
+  "function getAllMarkets() view returns (tuple(uint256 id, string question, string category, string[] options, uint256 deadline, address creator, uint8 status, uint256 outcomeIndex, string aiEvidence, uint256 totalSets, uint256[] shareReserves, uint256 createdAt, uint256 minStake)[])",
+  "function getMarket(uint256) view returns (tuple(uint256 id, string question, string category, string[] options, uint256 deadline, address creator, uint8 status, uint256 outcomeIndex, string aiEvidence, uint256 totalSets, uint256[] shareReserves, uint256 createdAt, uint256 minStake))",
   "function createMarket(string, string, string[], uint256, uint256) returns (uint256)",
-  "function stake(uint256, uint256) payable",
+  "function buyShares(uint256, uint256) payable",
+  "function sellShares(uint256, uint256, uint256)",
   "function claimReward(uint256)",
-  "function raiseDispute(uint256)",
-  "function getUserStakes(uint256, address) view returns (uint256[])"
+  "function getUserShares(uint256, address) view returns (uint256[])"
 ];
 
 export const SHARDEUM_CHAIN = {

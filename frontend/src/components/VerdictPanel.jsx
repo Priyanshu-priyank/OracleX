@@ -1,7 +1,8 @@
 import { explorerTx } from "../utils/contracts";
+import { formatSHM } from "../utils/format";
 
-export default function VerdictPanel({ market, onClaim, txPending, txHash, userStakes }) {
-  const won = BigInt(userStakes?.[market.outcomeIndex] ?? "0") > 0n;
+export default function VerdictPanel({ market, onClaim, txPending, txHash, userShares }) {
+  const won = BigInt(userShares?.[market.outcomeIndex] ?? "0") > 0n;
 
   // Enhanced parsing for Jury/Consensus format
   const consensusMatch = market.aiEvidence.match(/\[(Consensus|Jury) (\d+-\d+)\]/);
@@ -54,27 +55,27 @@ export default function VerdictPanel({ market, onClaim, txPending, txHash, userS
         </p>
       </div>
 
-      {/* Explorer link */}
+      {/* Claim section */}
+      {won && (
+        <div className="space-y-4">
+          <button
+            onClick={onClaim}
+            disabled={txPending}
+            className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-2xl font-black text-lg hover:shadow-lg transition-all transform hover:-translate-y-1"
+          >
+            {txPending ? "Claiming..." : `Claim ${formatSHM(userShares?.[market.outcomeIndex] ?? 0)} SHM Payout`}
+          </button>
+        </div>
+      )}
+
       {txHash && (
         <a href={explorerTx(txHash)} target="_blank" rel="noreferrer"
-          className="flex items-center justify-center gap-2 text-sm font-semibold text-purple-600 hover:text-purple-700 underline transition-colors bg-purple-50 p-3 rounded-xl border border-purple-100">
-          View resolution tx on Shardeum Explorer
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+          className="block text-sm font-semibold text-purple-600 hover:text-purple-700 underline text-center mb-6">
+          View claim tx on Shardeum Explorer →
         </a>
       )}
 
-      {/* Claim button */}
-      {won && (
-        <button
-          onClick={onClaim}
-          disabled={txPending}
-          className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-2xl font-bold text-lg hover:shadow-lg hover:shadow-emerald-500/30 transition-all disabled:opacity-50 transform hover:-translate-y-0.5"
-        >
-          {txPending ? "Claiming..." : "🎉 Claim your winnings"}
-        </button>
-      )}
-
-      {!won && userStakes?.some(s => BigInt(s) > 0n) && (
+      {!won && userShares?.some(s => BigInt(s) > 0n) && (
         <div className="text-center text-sm font-medium text-gray-500 bg-gray-50 py-4 rounded-xl border border-gray-100">
           You were on the losing side this time. Better luck next prediction!
         </div>

@@ -9,7 +9,7 @@ export function useMarket(id) {
     const cached = localStorage.getItem(CACHE_KEY);
     return cached ? JSON.parse(cached) : null;
   });
-  const [userStakes, setUserStakes] = useState([]);
+  const [userShares, setUserShares] = useState([]);
   const [loading,    setLoading]    = useState(!market);
   const [txPending,  setTxPending]  = useState(false);
   const [txHash,     setTxHash]     = useState(null);
@@ -31,8 +31,8 @@ export function useMarket(id) {
           status: Number(m.status), 
           outcomeIndex: Number(m.outcomeIndex), 
           aiEvidence: m.aiEvidence,
-          pools: m.pools.map(p => p.toString()),
-          totalPool: m.totalPool.toString(),
+          shareReserves: m.shareReserves.map(p => p.toString()),
+          totalSets: m.totalSets.toString(),
           createdAt: m.createdAt.toString(),
           minStake: m.minStake.toString(),
         };
@@ -43,8 +43,8 @@ export function useMarket(id) {
           const provider  = new ethers.BrowserProvider(window.ethereum);
           const accounts  = await provider.listAccounts();
           if (accounts.length > 0) {
-            const stakes = await c.getUserStakes(id, accounts[0].address);
-            setUserStakes(stakes.map(s => s.toString()));
+            const balances = await c.getUserShares(id, accounts[0].address);
+            setUserShares(balances.map(s => s.toString()));
           }
         }
       } catch (err) { setError(err.message); }
@@ -55,11 +55,22 @@ export function useMarket(id) {
     return () => clearInterval(interval);
   }, [id, CACHE_KEY]);
 
-  async function placeStake(optionIndex, amountEth) {
+  async function buyShares(optionIndex, amountEth) {
     setTxPending(true); setError(null); setTxHash(null);
     try {
       const c  = await getWriteContract();
-      const tx = await c.stake(id, optionIndex, { value: ethers.parseEther(amountEth) });
+      const tx = await c.buyShares(id, optionIndex, { value: ethers.parseEther(amountEth) });
+      setTxHash(tx.hash);
+      await tx.wait();
+    } catch (err) { setError(err.message); }
+    finally { setTxPending(false); }
+  }
+
+  async function sellShares(optionIndex, amountShares) {
+    setTxPending(true); setError(null); setTxHash(null);
+    try {
+      const c  = await getWriteContract();
+      const tx = await c.sellShares(id, optionIndex, amountShares);
       setTxHash(tx.hash);
       await tx.wait();
     } catch (err) { setError(err.message); }
@@ -88,5 +99,5 @@ export function useMarket(id) {
     finally { setTxPending(false); }
   }
 
-  return { market, userStakes, loading, txPending, txHash, error, placeStake, claimReward, raiseDispute };
+  return { market, userShares, loading, txPending, txHash, error, buyShares, sellShares, claimReward, raiseDispute };
 }

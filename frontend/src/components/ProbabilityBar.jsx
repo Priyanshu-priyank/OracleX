@@ -1,12 +1,17 @@
 import { formatSHM } from "../utils/format";
+const PRECISION = BigInt(1e18);
 
 export default function ProbabilityBar({ market, size = "sm" }) {
-  const pools     = market.pools.map(p => BigInt(p));
-  const totalPool = BigInt(market.totalPool || "0");
+  const reserves  = market.shareReserves.map(r => BigInt(r));
+  const totalSets = BigInt(market.totalSets || "0");
   
-  const getPercent = (pool) => {
-    if (totalPool === 0n) return Math.floor(100 / market.options.length);
-    return Math.floor(Number((pool * 100n) / totalPool));
+  // In CPMM, price is inversely proportional to reserve
+  const inverseReserves = reserves.map(r => r > 0 ? PRECISION * PRECISION / r : 0n);
+  const sumInverses    = inverseReserves.reduce((acc, v) => acc + v, 0n);
+
+  const getPercent = (idx) => {
+    if (sumInverses === 0n) return Math.floor(100 / market.options.length);
+    return Math.floor(Number((inverseReserves[idx] * 100n) / sumInverses));
   };
 
   const colors = [
@@ -43,11 +48,9 @@ export default function ProbabilityBar({ market, size = "sm" }) {
         })}
       </div>
       {size === "lg" && (
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-gray-400 pt-1 font-bold uppercase">
-          {market.options.map((opt, idx) => (
-            <span key={idx}>{formatSHM(pools[idx])} {opt}</span>
-          ))}
-          <span className="ml-auto">Total: {formatSHM(totalPool)} SHM</span>
+        <div className="flex justify-between text-[10px] text-gray-400 pt-1 font-black uppercase">
+          <span>{market.options.length} Outcomes</span>
+          <span>Collateral: {formatSHM(totalSets)} SHM</span>
         </div>
       )}
     </div>
