@@ -26,8 +26,8 @@ export function useMarkets() {
         status:      Number(m.status),
         outcomeIndex: Number(m.outcomeIndex),
         aiEvidence:  m.aiEvidence,
-        pools:       m.pools.map(p => p.toString()),
-        totalPool:   m.totalPool.toString(),
+        shareReserves: m.shareReserves.map(p => p.toString()),
+        totalSets:   m.totalSets.toString(),
         createdAt:   m.createdAt.toString(),
         minStake:    m.minStake.toString(),
       }));
