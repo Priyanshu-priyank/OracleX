@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { useWallet } from "../hooks/useWallet";
-import { getRPCProvider, VITE_NFT_ADDRESS } from "../utils/contracts";
-import { shortenAddress, CATEGORIES } from "../utils/format";
+import { getRPCProvider, getReadContract, VITE_NFT_ADDRESS, IS_SAFE_MODE } from "../utils/contracts";
+import { shortenAddress, CATEGORIES, formatSHM } from "../utils/format";
 import { ethers } from "ethers";
 
 export default function Profile() {
@@ -10,6 +10,7 @@ export default function Profile() {
   const [reputation, setReputation] = useState({});
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
+  const [mockWallet, setMockWallet] = useState("0");
 
   useEffect(() => {
     if (!address) {
@@ -44,6 +45,26 @@ export default function Profile() {
       }
     }
     loadRep();
+  }, [address]);
+
+  useEffect(() => {
+    if (!IS_SAFE_MODE || !address) return;
+    let mounted = true;
+    const loadWallet = async () => {
+      try {
+        const c = getReadContract();
+        const bal = await c.getWalletBalance(address);
+        if (mounted) setMockWallet(bal.toString());
+      } catch {
+        if (mounted) setMockWallet("0");
+      }
+    };
+    loadWallet();
+    const interval = setInterval(loadWallet, 3000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, [address]);
 
   if (!address) {
@@ -92,6 +113,17 @@ export default function Profile() {
             </div>
           </div>
         </div>
+        {IS_SAFE_MODE && (
+          <div className="rounded-3xl border border-amber-500/30 bg-amber-500/10 p-6">
+            <h3 className="text-xs font-bold text-amber-200 uppercase tracking-widest mb-2">
+              Mock wallet
+            </h3>
+            <div className="text-2xl font-black text-amber-100">{formatSHM(mockWallet)} SHM</div>
+            <p className="text-xs text-amber-200/80 mt-2">
+              This balance is fake demo money used in Safe Mode for placing and claiming bets.
+            </p>
+          </div>
+        )}
 
         <div className="rounded-3xl border border-[var(--ox-border)] bg-[var(--ox-surface)] p-6">
           <h3 className="text-xs font-bold text-[var(--ox-muted)] uppercase tracking-widest mb-4">

@@ -18,8 +18,8 @@ module.exports = {
   networks: {
     // Shardeum Testnet (Mezame)
     shardeum_testnet: {
-      url: process.env.SHARDEUM_TESTNET_RPC || "https://api-mezame.shardeum.org",
-      chainId: 8119,
+      url: process.env.SHARDEUM_TESTNET_RPC || process.env.SHARDEUM_RPC || "https://api-mezame.shardeum.org",
+      chainId: Number(process.env.SHARDEUM_TESTNET_CHAIN_ID) || 8119,
       accounts: [PRIVATE_KEY],
     },
     // Shardeum Mainnet

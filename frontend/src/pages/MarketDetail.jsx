@@ -8,7 +8,7 @@ import CommunityThread from "../components/CommunityThread";
 import OddsChart from "../components/OddsChart";
 import { useMarket } from "../hooks/useMarket";
 import { timeLeft, formatSHM, shortenAddress, statusLabel } from "../utils/format";
-import { explorerTx, explorerAddr } from "../utils/contracts";
+import { explorerTx, explorerAddr, IS_SAFE_MODE } from "../utils/contracts";
 import { ethers } from "ethers";
 
 export default function MarketDetail() {
@@ -16,7 +16,7 @@ export default function MarketDetail() {
   const navigate = useNavigate();
   const [showStake, setShowStake] = useState(false);
   const [initialSide, setInitialSide] = useState(null);
-  const { market, userShares, loading, txPending, txHash, error, buyShares, sellShares, claimReward } = useMarket(id);
+  const { market, userShares, walletBalance, loading, txPending, txHash, error, buyShares, sellShares, claimReward } = useMarket(id);
 
   if (loading) return <div className="min-h-screen bg-[var(--ox-bg)]"><Navbar /><div className="flex items-center justify-center h-[60vh] text-[var(--ox-muted)]">Loading…</div></div>;
   if (!market) return <div className="min-h-screen bg-[var(--ox-bg)]"><Navbar /><div className="flex items-center justify-center h-[60vh] text-[var(--ox-muted)]">Market not found.</div></div>;
@@ -35,6 +35,7 @@ export default function MarketDetail() {
           onBuy={buyShares}
           onSell={sellShares}
           userShares={userShares}
+          walletBalance={walletBalance}
           initialSide={initialSide}
           txPending={txPending}
           txHash={txHash}
@@ -95,6 +96,11 @@ export default function MarketDetail() {
                 <h2 className="text-xl font-extrabold">Trade shares</h2>
                 <div className="text-sm font-bold text-indigo-200 bg-indigo-500/15 border border-indigo-500/30 px-3 py-1 rounded-lg">Min: {ethers.formatEther(market.minStake || "0")} SHM</div>
               </div>
+              {IS_SAFE_MODE && (
+                <div className="text-sm font-bold border border-amber-500/30 rounded-xl p-3 text-amber-100 bg-amber-500/10">
+                  Mock wallet balance: {formatSHM(walletBalance || "0")} SHM
+                </div>
+              )}
 
               {userShares && userShares.some(s => BigInt(s) > 0n) && (
                 <div className="text-sm font-bold border border-indigo-500/30 rounded-xl p-4 text-indigo-100 bg-indigo-500/10 space-y-2">

@@ -1,8 +1,10 @@
 {
-  "name": "oraclex",
+  "name": "shardeum-starter-kit",
   "version": "1.0.0",
+  "description": "Starter kit for building smart contracts on Shardeum blockchain",
   "scripts": {
     "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
     "deploy": "npx hardhat run scripts/deploy.js --network shardeum_testnet",
     "deploy:testnet": "npx hardhat run scripts/deploy.js --network shardeum_testnet",
     "deploy:mainnet": "npx hardhat run scripts/deploy.js --network shardeum_mainnet",
@@ -11,9 +13,6 @@
     "interact:mainnet": "npx hardhat run scripts/interact.js --network shardeum_mainnet",
     "console": "npx hardhat console --network shardeum_testnet",
     "console:testnet": "npx hardhat console --network shardeum_testnet"
-  },
-  "dependencies": {
-    "@openzeppelin/contracts": "5.0.2"
   },
   "devDependencies": {
     "hardhat": "^2.22.0",
