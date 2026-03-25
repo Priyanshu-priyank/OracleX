@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 /// @title  OracleX PredictionMarket
 /// @notice Decentralized prediction market on Shardeum.
 ///         Markets are created by users, stakes are locked on-chain,
-///         and resolved by an AI oracle (Claude) that stores its
+///         and resolved by an AI oracle (OracleX) that stores its
 ///         2-sentence reasoning permanently in this contract's state.
 contract PredictionMarket {
 
@@ -22,7 +22,7 @@ contract PredictionMarket {
         address creator;
         Status  status;
         bool    outcome;        // true = YES won
-        string  aiEvidence;    // Claude's reasoning — stored forever on-chain
+        string  aiEvidence;    // OracleX's reasoning — stored forever on-chain
         uint256 yesPool;       // total SHM staked on YES
         uint256 noPool;        // total SHM staked on NO
         uint256 createdAt;
@@ -149,7 +149,7 @@ contract PredictionMarket {
     //  AI Oracle Resolution
     // ─────────────────────────────────────────────
 
-    /// @dev Called by the Node.js AI agent after Claude determines the outcome.
+    /// @dev Called by the Node.js AI agent after OracleX determines the outcome.
     ///      _evidence is stored permanently in Shardeum state — judges can read it.
     function aiResolve(
         uint256          _id,

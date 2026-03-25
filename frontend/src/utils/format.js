@@ -19,13 +19,7 @@ export function timeLeft(deadline) {
   return `${m}m`;
 }
 
-export function yesPercent(m) {
-  const yes = BigInt(m.yesPool.toString());
-  const no  = BigInt(m.noPool.toString());
-  const total = yes + no;
-  if (total === 0n) return 50;
-  return Number((yes * 100n) / total);
-}
+
 
 export function statusLabel(s) {
   return ["Open", "Resolved", "Disputed"][Number(s)] ?? "Unknown";

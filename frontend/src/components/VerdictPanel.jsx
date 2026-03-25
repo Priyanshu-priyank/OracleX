@@ -1,9 +1,7 @@
 import { explorerTx } from "../utils/contracts";
 
 export default function VerdictPanel({ market, onClaim, txPending, txHash, userStakes }) {
-  const won = market.outcome
-    ? BigInt(userStakes?.yes ?? "0") > 0n
-    : BigInt(userStakes?.no ?? "0") > 0n;
+  const won = BigInt(userStakes?.[market.outcomeIndex] ?? "0") > 0n;
 
   // Enhanced parsing for Jury/Consensus format
   const consensusMatch = market.aiEvidence.match(/\[(Consensus|Jury) (\d+-\d+)\]/);
@@ -19,9 +17,9 @@ export default function VerdictPanel({ market, onClaim, txPending, txHash, userS
   return (
     <div className="space-y-6">
       {/* Outcome banner */}
-      <div className={`rounded-2xl p-6 text-center border-2 shadow-sm ${market.outcome ? "bg-emerald-50 border-emerald-200" : "bg-rose-50 border-rose-200"}`}>
-        <div className={`text-5xl font-extrabold tracking-tight ${market.outcome ? "text-emerald-600" : "text-rose-600"}`}>
-          {market.outcome ? "YES" : "NO"}
+      <div className={`rounded-2xl p-6 text-center border-2 shadow-sm ${market.outcomeIndex === 0 ? "bg-emerald-50 border-emerald-200" : "bg-rose-50 border-rose-200"}`}>
+        <div className={`text-5xl font-extrabold tracking-tight ${market.outcomeIndex === 0 ? "text-emerald-600" : "text-rose-600"}`}>
+          {market.options[market.outcomeIndex]}
         </div>
         <div className="text-sm font-semibold text-gray-500 mt-2 uppercase tracking-widest">
            Final Outcome {consensusInfo && <span className="text-gray-400">({consensusInfo} Jury Vote)</span>}
@@ -76,7 +74,7 @@ export default function VerdictPanel({ market, onClaim, txPending, txHash, userS
         </button>
       )}
 
-      {!won && (BigInt(userStakes?.yes ?? "0") > 0n || BigInt(userStakes?.no ?? "0") > 0n) && (
+      {!won && userStakes?.some(s => BigInt(s) > 0n) && (
         <div className="text-center text-sm font-medium text-gray-500 bg-gray-50 py-4 rounded-xl border border-gray-100">
           You were on the losing side this time. Better luck next prediction!
         </div>

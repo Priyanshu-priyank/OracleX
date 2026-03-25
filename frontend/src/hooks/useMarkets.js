@@ -2,12 +2,16 @@ import { useState, useEffect, useCallback } from "react";
 import { getReadContract } from "../utils/contracts";
 
 export function useMarkets() {
-  const [markets, setMarkets] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const CACHE_KEY = "oraclex_markets_cache";
+  
+  const [markets, setMarkets] = useState(() => {
+    const cached = localStorage.getItem(CACHE_KEY);
+    return cached ? JSON.parse(cached) : [];
+  });
+  const [loading, setLoading] = useState(markets.length === 0);
   const [error,   setError]   = useState(null);
 
   const load = useCallback(async () => {
-    setLoading(true);
     try {
       const contract = getReadContract();
       const raw = await contract.getAllMarkets();
@@ -16,19 +20,20 @@ export function useMarkets() {
         id:          m.id.toString(),
         question:    m.question,
         category:    m.category,
-        optionA:     m.optionA,
-        optionB:     m.optionB,
+        options:     m.options,
         deadline:    m.deadline.toString(),
         creator:     m.creator,
         status:      Number(m.status),
-        outcome:     m.outcome,
+        outcomeIndex: Number(m.outcomeIndex),
         aiEvidence:  m.aiEvidence,
-        yesPool:     m.yesPool.toString(),
-        noPool:      m.noPool.toString(),
+        pools:       m.pools.map(p => p.toString()),
+        totalPool:   m.totalPool.toString(),
         createdAt:   m.createdAt.toString(),
         minStake:    m.minStake.toString(),
       }));
-      setMarkets(parsed.reverse()); // newest first
+      const sorted = parsed.reverse();
+      setMarkets(sorted);
+      localStorage.setItem(CACHE_KEY, JSON.stringify(sorted));
     } catch (err) {
       setError(err.message);
     } finally {

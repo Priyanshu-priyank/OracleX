@@ -114,7 +114,7 @@ export default function Home() {
                 {[
                   ["1", "Create a market", "Ask any yes/no question with a deadline and minimum bet."],
                   ["2", "Stake SHM", "Bet YES or NO — funds are locked securely on-chain."],
-                  ["3", "AI resolves", "Claude searches the web, stores its verifiable verdict on Shardeum."],
+                  ["3", "AI resolves", "OracleX searches the web, stores its verifiable verdict on Shardeum."],
                   ["4", "Claim rewards", "Winners receive proportional payouts automatically."],
                 ].map(([n, title, desc]) => (
                   <div key={n} className="flex gap-4 group">

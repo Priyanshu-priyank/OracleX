@@ -3,15 +3,31 @@ import { explorerTx } from "../utils/contracts";
 import { ethers } from "ethers";
 
 export default function StakeModal({ market, onStake, txPending, txHash, error, onClose }) {
-  const [amount, setAmount] = useState(ethers.formatEther(market.minStake || "1000000000000000000000"));
-  const [side,   setSide]   = useState(null);
+  const [amount,      setAmount]      = useState(ethers.formatEther(market.minStake || "0"));
+  const [selectedIndex, setSelectedIndex] = useState(null);
   
   const minBet = market.minStake ? ethers.formatEther(market.minStake) : "1000";
 
   async function handleStake() {
-    if (!side || !amount) return;
-    await onStake(side === "yes", amount);
+    if (selectedIndex === null || !amount) return;
+    await onStake(selectedIndex, amount);
   }
+
+  const colors = [
+    "bg-emerald-500 border-emerald-500 shadow-emerald-500/30",
+    "bg-rose-500 border-rose-500 shadow-rose-500/30",
+    "bg-amber-500 border-amber-500 shadow-amber-500/30",
+    "bg-indigo-500 border-indigo-500 shadow-indigo-500/30",
+    "bg-teal-500 border-teal-500 shadow-teal-500/30",
+  ];
+
+  const lightColors = [
+    "text-emerald-600 border-emerald-100 hover:border-emerald-300 hover:bg-emerald-50",
+    "text-rose-600 border-rose-100 hover:border-rose-300 hover:bg-rose-50",
+    "text-amber-600 border-amber-100 hover:border-amber-300 hover:bg-amber-50",
+    "text-indigo-600 border-indigo-100 hover:border-indigo-300 hover:bg-indigo-50",
+    "text-teal-600 border-teal-100 hover:border-teal-300 hover:bg-teal-50",
+  ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm transition-opacity">
@@ -25,20 +41,18 @@ export default function StakeModal({ market, onStake, txPending, txHash, error, 
 
         <p className="text-sm font-medium text-gray-600 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">{market.question}</p>
 
-        {/* Side selection */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <button
-            onClick={() => setSide("yes")}
-            className={`py-4 rounded-2xl font-bold text-lg transition-all border-2 uppercase ${side === "yes" ? "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/30 transform -translate-y-1" : "bg-white text-emerald-600 border-emerald-100 hover:border-emerald-300 hover:bg-emerald-50"}`}
-          >
-            {market.optionA}
-          </button>
-          <button
-            onClick={() => setSide("no")}
-            className={`py-4 rounded-2xl font-bold text-lg transition-all border-2 uppercase ${side === "no" ? "bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-500/30 transform -translate-y-1" : "bg-white text-rose-600 border-rose-100 hover:border-rose-300 hover:bg-rose-50"}`}
-          >
-            {market.optionB}
-          </button>
+        {/* Option selection */}
+        <div className="grid grid-cols-1 gap-3 mb-6">
+          {market.options.map((opt, idx) => (
+            <button
+              key={idx}
+              onClick={() => setSelectedIndex(idx)}
+              className={`py-3.5 px-4 rounded-xl font-bold text-base transition-all border-2 uppercase flex justify-between items-center ${selectedIndex === idx ? `${colors[idx % colors.length]} text-white shadow-lg transform -translate-y-0.5` : `bg-white ${lightColors[idx % lightColors.length]}`}`}
+            >
+              <span>{opt}</span>
+              {selectedIndex === idx && <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
+            </button>
+          ))}
         </div>
 
         {/* Amount */}
@@ -71,10 +85,10 @@ export default function StakeModal({ market, onStake, txPending, txHash, error, 
 
         <button
           onClick={handleStake}
-          disabled={!side || !amount || txPending || Number(amount) < Number(minBet)}
+          disabled={selectedIndex === null || !amount || txPending || Number(amount) < Number(minBet)}
           className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl font-bold text-lg hover:shadow-lg hover:shadow-purple-500/30 transition-all disabled:opacity-50 transform hover:-translate-y-0.5"
         >
-          {txPending ? "Confirming Transaction..." : side ? `Stake ${amount} SHM on ${side === "yes" ? market.optionA : market.optionB}` : "Select Option"}
+          {txPending ? "Confirming Transaction..." : selectedIndex !== null ? `Stake ${amount} SHM on ${market.options[selectedIndex]}` : "Select Option"}
         </button>
       </div>
     </div>
