@@ -7,16 +7,18 @@ import VerdictPanel from "../components/VerdictPanel";
 import CommunityThread from "../components/CommunityThread";
 import OddsChart from "../components/OddsChart";
 import { useMarket } from "../hooks/useMarket";
+import { useWallet } from "../hooks/useWallet";
 import { timeLeft, formatSHM, shortenAddress, statusLabel } from "../utils/format";
-import { explorerTx, explorerAddr } from "../utils/contracts";
+import { explorerTx, explorerAddr, IS_SAFE_MODE } from "../utils/contracts";
 import { ethers } from "ethers";
 
 export default function MarketDetail() {
+  const { address } = useWallet();
   const { id } = useParams();
   const navigate = useNavigate();
   const [showStake, setShowStake] = useState(false);
   const [initialSide, setInitialSide] = useState(null);
-  const { market, userShares, loading, txPending, txHash, error, buyShares, sellShares, claimReward } = useMarket(id);
+  const { market, userShares, loading, txPending, txHash, error, buyShares, sellShares, claimReward, deleteMarket } = useMarket(id);
 
   if (loading) return <div className="min-h-screen bg-[var(--ox-bg)]"><Navbar /><div className="flex items-center justify-center h-[60vh] text-[var(--ox-muted)]">Loading…</div></div>;
   if (!market) return <div className="min-h-screen bg-[var(--ox-bg)]"><Navbar /><div className="flex items-center justify-center h-[60vh] text-[var(--ox-muted)]">Market not found.</div></div>;
@@ -45,11 +47,29 @@ export default function MarketDetail() {
 
       <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
 
-        {/* Breadcrumb */}
-        <button type="button" onClick={() => navigate("/")} className="text-sm font-bold text-[var(--ox-muted)] hover:text-white transition-colors flex items-center gap-1">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-          All Markets
-        </button>
+        {/* Breadcrumb & Actions */}
+        <div className="flex justify-between items-center">
+          <button type="button" onClick={() => navigate("/")} className="text-sm font-bold text-[var(--ox-muted)] hover:text-white transition-colors flex items-center gap-1">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            All Markets
+          </button>
+          
+          {IS_SAFE_MODE && address && address.toLowerCase() === (market.creator || "").toLowerCase() && (
+            <button 
+              type="button" 
+              onClick={async () => {
+                if (window.confirm("Are you sure you want to delete this market? This is only possible in Safe Mode.")) {
+                  const success = await deleteMarket();
+                  if (success) navigate("/");
+                }
+              }}
+              disabled={txPending}
+              className="text-xs font-bold text-red-400 hover:text-red-300 bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors border border-red-500/30"
+            >
+              Delete Market
+            </button>
+          )}
+        </div>
 
         {/* Header Content */}
         <div className="rounded-3xl border border-[var(--ox-border)] bg-[var(--ox-surface)] p-8 space-y-8">

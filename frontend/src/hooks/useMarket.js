@@ -88,5 +88,19 @@ export function useMarket(id) {
     finally { setTxPending(false); }
   }
 
-  return { market, userShares, loading, txPending, txHash, error, buyShares, sellShares, claimReward };
+  async function deleteMarket() {
+    setTxPending(true); setError(null); setTxHash(null);
+    try {
+      const c  = await getWriteContract();
+      if (!c.deleteMarket) throw new Error("Delete is only supported in Safe Mode");
+      const tx = await c.deleteMarket(id);
+      setTxHash(tx.hash);
+      await tx.wait();
+      localStorage.removeItem(CACHE_KEY);
+      return true;
+    } catch (err) { setError(err.message); return false; }
+    finally { setTxPending(false); }
+  }
+
+  return { market, userShares, loading, txPending, txHash, error, buyShares, sellShares, claimReward, deleteMarket };
 }
