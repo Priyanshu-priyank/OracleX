@@ -1,16 +1,18 @@
 import { formatSHM } from "../utils/format";
+
 const PRECISION = BigInt(1e18);
 
 export default function ProbabilityBar({ market, size = "sm" }) {
-  const reserves  = market.shareReserves.map(r => BigInt(r));
+  const reserves = (market.shareReserves || []).map((r) => BigInt(r));
   const totalSets = BigInt(market.totalSets || "0");
-  
-  // In CPMM, price is inversely proportional to reserve
-  const inverseReserves = reserves.map(r => r > 0 ? PRECISION * PRECISION / r : 0n);
-  const sumInverses    = inverseReserves.reduce((acc, v) => acc + v, 0n);
+  const n = market.options?.length || 0;
+
+  const inverseReserves = reserves.map((r) => (r > 0n ? (PRECISION * PRECISION) / r : 0n));
+  const sumInverses = inverseReserves.reduce((acc, v) => acc + v, 0n);
 
   const getPercent = (idx) => {
-    if (sumInverses === 0n) return Math.floor(100 / market.options.length);
+    if (n === 0) return 0;
+    if (sumInverses === 0n) return Math.floor(100 / n);
     return Math.floor(Number((inverseReserves[idx] * 100n) / sumInverses));
   };
 
@@ -22,21 +24,30 @@ export default function ProbabilityBar({ market, size = "sm" }) {
     "from-teal-400 to-teal-500",
   ];
 
+  if (!market.options?.length) return null;
+
   return (
     <div className="space-y-1.5 w-full">
       <div className="flex justify-between text-[10px] font-black tracking-wider uppercase overflow-hidden gap-2">
         {market.options.map((opt, idx) => {
-          const p = getPercent(pools[idx]);
+          const p = getPercent(idx);
           return (
-            <span key={idx} className={idx === 0 ? "text-emerald-500" : idx === 1 ? "text-rose-500" : "text-gray-500"}>
+            <span
+              key={idx}
+              className={
+                idx === 0 ? "text-emerald-400" : idx === 1 ? "text-rose-400" : "text-[var(--ox-muted)]"
+              }
+            >
               {opt} {p}%
             </span>
           );
         })}
       </div>
-      <div className={`w-full rounded-full bg-gray-100 overflow-hidden shadow-inner flex ${size === "lg" ? "h-3" : "h-2"}`}>
+      <div
+        className={`w-full rounded-full bg-[#252b33] overflow-hidden shadow-inner flex ${size === "lg" ? "h-3" : "h-2"}`}
+      >
         {market.options.map((_, idx) => {
-          const p = getPercent(pools[idx]);
+          const p = getPercent(idx);
           if (p === 0) return null;
           return (
             <div
@@ -48,8 +59,8 @@ export default function ProbabilityBar({ market, size = "sm" }) {
         })}
       </div>
       {size === "lg" && (
-        <div className="flex justify-between text-[10px] text-gray-400 pt-1 font-black uppercase">
-          <span>{market.options.length} Outcomes</span>
+        <div className="flex justify-between text-[10px] text-[var(--ox-muted)] pt-1 font-black uppercase">
+          <span>{market.options.length} outcomes</span>
           <span>Collateral: {formatSHM(totalSets)} SHM</span>
         </div>
       )}

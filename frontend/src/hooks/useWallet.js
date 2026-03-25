@@ -1,20 +1,36 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, createContext, useContext, createElement } from "react";
 import { SHARDEUM_CHAIN } from "../utils/contracts";
 
-export function useWallet() {
-  const [address, setAddress]   = useState(null);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState(null);
+const WalletContext = createContext(null);
+
+export function WalletProvider({ children }) {
+  const [address, setAddress] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState(null);
+
+  useEffect(() => {
+    if (window.ethereum) {
+      window.ethereum.request({ method: "eth_accounts" })
+        .then(accounts => {
+          if (accounts.length > 0) setAddress(accounts[0]);
+        })
+        .catch(console.error);
+
+      window.ethereum.on("accountsChanged", accounts => {
+        if (accounts.length > 0) setAddress(accounts[0]);
+        else setAddress(null);
+      });
+      window.ethereum.on("chainChanged", () => window.location.reload());
+    }
+  }, []);
 
   const connect = useCallback(async () => {
     if (!window.ethereum) {
       setError("MetaMask not found. Please install it.");
       return;
     }
-    setLoading(true);
-    setError(null);
+    setLoading(true); setError(null);
     try {
-      // Switch to Shardeum
       try {
         await window.ethereum.request({
           method: "wallet_switchEthereumChain",
@@ -30,14 +46,21 @@ export function useWallet() {
       }
       const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
       setAddress(accounts[0]);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { setError(err.message); } 
+    finally { setLoading(false); }
   }, []);
 
   const disconnect = useCallback(() => setAddress(null), []);
 
-  return { address, connect, disconnect, loading, error };
+  return createElement(
+    WalletContext.Provider,
+    { value: { address, connect, disconnect, loading, error } },
+    children
+  );
+}
+
+export function useWallet() {
+  const context = useContext(WalletContext);
+  if (!context) throw new Error("useWallet must be used within a WalletProvider");
+  return context;
 }

@@ -6,30 +6,43 @@ export default function Navbar() {
   const { address, connect, loading } = useWallet();
 
   return (
-    <nav className="border-b border-gray-100 px-6 py-4 flex items-center justify-between bg-white/80 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
-      <Link to="/" className="font-extrabold text-2xl bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent tracking-tight hover:opacity-80 transition-all">
+    <nav className="sticky top-0 z-50 border-b border-[var(--ox-border)] bg-[#0b0e11]/90 backdrop-blur-xl px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+      <Link
+        to="/"
+        className="font-extrabold text-xl sm:text-2xl text-[var(--ox-text)] tracking-tight hover:opacity-90 transition-opacity shrink-0"
+      >
         OracleX
       </Link>
 
-      <div className="flex items-center gap-8 text-sm font-semibold text-gray-500">
-        <Link to="/" className="hover:text-purple-600 transition-all">Markets</Link>
-        <Link to="/create" className="hover:text-purple-600 transition-all">Create</Link>
+      <div className="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-semibold text-[var(--ox-muted)]">
+        <Link to="/" className="hover:text-[var(--ox-text)] transition-colors">
+          Markets
+        </Link>
+        <Link to="/create" className="hover:text-[var(--ox-text)] transition-colors">
+          Create
+        </Link>
+        {address && (
+          <Link to="/profile" className="hover:text-[var(--ox-text)] transition-colors">
+            Profile
+          </Link>
+        )}
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {address ? (
-          <button
-            className="text-sm px-5 py-2.5 rounded-full bg-purple-50 text-purple-700 font-bold hover:bg-purple-100 transition-all shadow-sm border border-purple-100"
+          <Link
+            to="/profile"
+            className="text-xs sm:text-sm px-3 sm:px-5 py-2 rounded-full bg-white/5 text-[var(--ox-text)] font-bold border border-[var(--ox-border)] hover:bg-white/10 transition-colors max-w-[140px] truncate"
           >
             {shortenAddress(address)}
-          </button>
+          </Link>
         ) : (
           <button
             onClick={connect}
             disabled={loading}
-            className="text-sm px-6 py-2.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold hover:shadow-lg hover:shadow-purple-500/30 transition-all disabled:opacity-50 transform hover:-translate-y-0.5"
+            className="text-xs sm:text-sm px-4 sm:px-6 py-2 rounded-full bg-[var(--ox-accent)] text-white font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {loading ? "Connecting..." : "Connect wallet"}
+            {loading ? "Connecting…" : "Connect"}
           </button>
         )}
       </div>

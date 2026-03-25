@@ -10,18 +10,33 @@ export function useCreateMarket() {
   async function createMarket(question, category, options, durationHours, minStake) {
     setLoading(true); setError(null); setTxHash(null);
     try {
-      const c      = await getWriteContract();
+      const c = await getWriteContract();
       const minStakeWei = ethers.parseEther(minStake.toString());
-      const tx     = await c.createMarket(question, category, options, durationHours, minStakeWei);
+      // Contract requires msg.value >= minStake to seed AMM liquidity
+      const tx = await c.createMarket(question, category, options, durationHours, minStakeWei, {
+        value: minStakeWei,
+      });
       setTxHash(tx.hash);
       const receipt = await tx.wait();
-      
-      const iface   = c.interface;
-      const log     = receipt.logs.find(l => {
-        try { iface.parseLog(l); return true; } catch { return false; }
-      });
-      const parsed  = log ? iface.parseLog(log) : null;
-      const newId   = parsed?.args[0]?.toString();
+
+      let newId = null;
+      const target = (await c.getAddress()).toLowerCase();
+      for (const log of receipt.logs) {
+        if (String(log.address).toLowerCase() !== target) continue;
+        try {
+          const parsed = c.interface.parseLog(log);
+          if (parsed?.name === "MarketCreated") {
+            newId = parsed.args.id.toString();
+            break;
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+      if (!newId) {
+        const count = await c.marketCount();
+        newId = count.toString();
+      }
       return newId;
     } catch (err) {
       setError(err.message);

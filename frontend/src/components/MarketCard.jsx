@@ -2,65 +2,67 @@ import { useNavigate } from "react-router-dom";
 import ProbabilityBar from "./ProbabilityBar";
 import { timeLeft, formatSHM, statusLabel } from "../utils/format";
 
-const STATUS_COLORS = {
-  0: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  1: "bg-blue-50 text-blue-700 border-blue-100",
-  2: "bg-orange-50 text-orange-700 border-orange-100",
+const STATUS_STYLES = {
+  0: "text-emerald-400 border-emerald-500/40 bg-emerald-500/10",
+  1: "text-sky-300 border-sky-500/40 bg-sky-500/10",
+  2: "text-amber-300 border-amber-500/40 bg-amber-500/10",
 };
 
-const CATEGORY_COLORS = {
-  Crypto: "bg-amber-50 text-amber-700",
-  Sports: "bg-teal-50 text-teal-700",
-  Politics: "bg-rose-50 text-rose-600",
-  Finance: "bg-blue-50 text-blue-700",
-  "Daily Life": "bg-purple-50 text-purple-700",
-  Other: "bg-gray-100 text-gray-600",
+const CATEGORY_STYLES = {
+  Crypto: "bg-amber-500/15 text-amber-200 border-amber-500/30",
+  Sports: "bg-teal-500/15 text-teal-200 border-teal-500/30",
+  Politics: "bg-rose-500/15 text-rose-200 border-rose-500/30",
+  Finance: "bg-sky-500/15 text-sky-200 border-sky-500/30",
+  "Daily Life": "bg-violet-500/15 text-violet-200 border-violet-500/30",
+  Other: "bg-white/5 text-[var(--ox-muted)] border-[var(--ox-border)]",
 };
 
 export default function MarketCard({ market }) {
   const navigate = useNavigate();
-  const total    = market.totalSets || "0";
+  const total = market.totalSets || "0";
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       onClick={() => navigate(`/market/${market.id}`)}
-      className="border border-gray-100 rounded-2xl p-5 space-y-4 bg-white hover:shadow-premium hover:border-purple-200 transition-all cursor-pointer group"
+      onKeyDown={(e) => e.key === "Enter" && navigate(`/market/${market.id}`)}
+      className="rounded-2xl border border-[var(--ox-border)] bg-[var(--ox-surface)] p-5 space-y-4 cursor-pointer hover:border-[var(--ox-accent)]/50 transition-all group"
     >
-      {/* Top row */}
       <div className="flex justify-between items-start gap-2">
-        <span className={`text-xs font-bold px-3 py-1 rounded-full ${CATEGORY_COLORS[market.category] ?? CATEGORY_COLORS.Other}`}>
+        <span
+          className={`text-xs font-bold px-2.5 py-1 rounded-md border ${
+            CATEGORY_STYLES[market.category] ?? CATEGORY_STYLES.Other
+          }`}
+        >
           {market.category}
         </span>
-        <span className={`text-xs font-bold px-3 py-1 rounded-full border ${STATUS_COLORS[market.status]}`}>
+        <span
+          className={`text-xs font-bold px-2.5 py-1 rounded-md border ${STATUS_STYLES[market.status] ?? STATUS_STYLES[0]}`}
+        >
           {statusLabel(market.status)}
         </span>
       </div>
 
-      {/* Question */}
-      <h3 className="text-base font-bold text-gray-900 leading-snug line-clamp-2 group-hover:text-purple-700 transition-colors">
+      <h3 className="text-base font-bold text-[var(--ox-text)] leading-snug line-clamp-2 group-hover:text-white transition-colors">
         {market.question}
       </h3>
 
-      {/* Probability bar */}
       <ProbabilityBar market={market} size="sm" />
 
-      {/* Bottom meta */}
-      <div className="flex justify-between items-center text-xs font-medium text-gray-400 pt-2 border-t border-gray-50">
+      <div className="flex justify-between items-center text-xs font-medium text-[var(--ox-muted)] pt-2 border-t border-[var(--ox-border)]">
         <span className="flex items-center gap-1">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          {formatSHM(total)} SHM
+          <span className="opacity-70">Vol.</span> {formatSHM(total)} SHM
         </span>
-        <span className="flex items-center gap-1">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span>
           {market.status === 0 ? timeLeft(market.deadline) : "Closed"}
         </span>
       </div>
 
-      {/* AI verdict if resolved */}
-      {market.status === 1 && market.aiEvidence && (
-        <div className="text-xs bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 rounded-xl p-3 text-amber-800 line-clamp-2 shadow-inner">
-          <span className="font-bold">AI Verdict: </span>
-          {market.options[market.outcomeIndex]} ✓ — {market.aiEvidence}
+      {market.status === 1 && market.aiEvidence && market.options?.length > 0 && (
+        <div className="text-xs rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-amber-100 line-clamp-2">
+          <span className="font-bold">Resolved: </span>
+          {market.options[market.outcomeIndex]} — {market.aiEvidence}
         </div>
       )}
     </div>

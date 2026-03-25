@@ -2,12 +2,14 @@ import { ethers } from "ethers";
 
 // ← Loaded from .env (VITE_MARKET_ADDRESS)
 export const MARKET_ADDRESS = import.meta.env.VITE_MARKET_ADDRESS;
+export const VITE_NFT_ADDRESS = import.meta.env.VITE_NFT_ADDRESS;
 
 export const MARKET_ABI = [
   "function marketCount() view returns (uint256)",
   "function getAllMarkets() view returns (tuple(uint256 id, string question, string category, string[] options, uint256 deadline, address creator, uint8 status, uint256 outcomeIndex, string aiEvidence, uint256 totalSets, uint256[] shareReserves, uint256 createdAt, uint256 minStake)[])",
   "function getMarket(uint256) view returns (tuple(uint256 id, string question, string category, string[] options, uint256 deadline, address creator, uint8 status, uint256 outcomeIndex, string aiEvidence, uint256 totalSets, uint256[] shareReserves, uint256 createdAt, uint256 minStake))",
-  "function createMarket(string, string, string[], uint256, uint256) returns (uint256)",
+  "function createMarket(string, string, string[], uint256, uint256) payable returns (uint256)",
+  "event MarketCreated(uint256 indexed id, string question, string category, string[] options, uint256 deadline, address creator)",
   "function buyShares(uint256, uint256) payable",
   "function sellShares(uint256, uint256, uint256)",
   "function claimReward(uint256)",
@@ -22,9 +24,12 @@ export const SHARDEUM_CHAIN = {
   blockExplorerUrls: ["https://explorer.shardeum.org/"]
 };
 
+export function getRPCProvider() {
+  return new ethers.JsonRpcProvider(SHARDEUM_CHAIN.rpcUrls[0]);
+}
+
 export function getReadContract() {
-  const provider = new ethers.JsonRpcProvider("https://api-mezame.shardeum.org");
-  return new ethers.Contract(MARKET_ADDRESS, MARKET_ABI, provider);
+  return new ethers.Contract(MARKET_ADDRESS, MARKET_ABI, getRPCProvider());
 }
 
 export async function getWriteContract() {

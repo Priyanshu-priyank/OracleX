@@ -2,12 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Inter', sans-serif;
-  background-color: #f9fafb;
+/* OracleX dark shell — layout only; categories come from CATEGORIES in format.js */
+:root {
+  --ox-bg: #0b0e11;
+  --ox-surface: #151a1f;
+  --ox-border: #252b33;
+  --ox-muted: #8b949e;
+  --ox-text: #e6edf3;
+  --ox-accent: #6366f1;
+  --ox-yes: #22c55e;
+  --ox-no: #ef4444;
 }
 
-/* Premium micro-animations */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--ox-bg);
+  color: var(--ox-text);
+}
+
 .transition-all {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -15,6 +27,6 @@ body {
 }
 
 .hover\:shadow-premium:hover {
-  box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.1), 0 8px 10px -6px rgba(124, 58, 237, 0.1);
+  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
   transform: translateY(-2px);
 }

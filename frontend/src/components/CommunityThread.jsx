@@ -49,13 +49,13 @@ export default function CommunityThread({ marketId }) {
   };
 
   return (
-    <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm space-y-8">
-      <div className="flex items-center justify-between border-b border-gray-50 pb-6">
-        <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
-          <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
-          Community Discussion
+    <div className="rounded-3xl border border-[var(--ox-border)] bg-[var(--ox-surface)] p-8 space-y-8">
+      <div className="flex items-center justify-between border-b border-[var(--ox-border)] pb-6">
+        <h3 className="text-xl font-black text-[var(--ox-text)] flex items-center gap-2">
+          <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
+          Community
         </h3>
-        <span className="text-xs font-black text-purple-600 bg-purple-50 px-3 py-1 rounded-full">{comments.length} Messages</span>
+        <span className="text-xs font-black text-indigo-300 bg-indigo-500/15 border border-indigo-500/30 px-3 py-1 rounded-full">{comments.length} messages</span>
       </div>
 
       {address ? (
@@ -65,33 +65,34 @@ export default function CommunityThread({ marketId }) {
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Share evidence or debate the outcome..."
             rows={3}
-            className="w-full border-2 border-gray-100 rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all resize-none"
+            className="w-full border-2 border-[var(--ox-border)] rounded-2xl px-4 py-3 text-sm font-medium bg-[#0b0e11] text-[var(--ox-text)] focus:outline-none focus:border-[var(--ox-accent)] focus:ring-2 focus:ring-[var(--ox-accent)]/30 transition-all resize-none"
           />
           <div className="flex justify-end">
             <button
+              type="submit"
               disabled={!newComment.trim()}
-              className="px-6 py-2.5 bg-purple-600 text-white rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-purple-500/30 transition-all transform hover:-translate-y-0.5 disabled:opacity-50"
+              className="px-6 py-2.5 bg-[var(--ox-accent)] text-white rounded-xl font-bold text-sm hover:opacity-95 disabled:opacity-50"
             >
-              Post Comment
+              Post
             </button>
           </div>
         </form>
       ) : (
-        <div className="bg-gray-50 rounded-2xl p-4 text-center text-sm font-bold text-gray-400">
-          Connect your wallet to join the discussion
+        <div className="rounded-2xl border border-[var(--ox-border)] bg-[#0b0e11] p-4 text-center text-sm font-bold text-[var(--ox-muted)]">
+          Connect your wallet to comment
         </div>
       )}
 
       <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2 scrollbar-hide">
         {comments.map((c, i) => (
-          <div key={i} className="space-y-2 border-b border-gray-50 pb-6 last:border-0">
+          <div key={i} className="space-y-2 border-b border-[var(--ox-border)] pb-6 last:border-0">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-gray-900 font-mono bg-gray-100 px-2 py-0.5 rounded shadow-sm">{shortenAddress(c.user)}</span>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+              <span className="text-xs font-black text-[var(--ox-text)] font-mono bg-white/5 px-2 py-0.5 rounded border border-[var(--ox-border)]">{shortenAddress(c.user)}</span>
+              <span className="text-[10px] font-bold text-[var(--ox-muted)] uppercase tracking-tighter">
                 {new Date(c.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
-            <p className="text-sm font-medium text-gray-600 leading-relaxed bg-gray-50/50 p-4 rounded-2xl border border-gray-50/50">
+            <p className="text-sm font-medium text-[var(--ox-muted)] leading-relaxed bg-[#0b0e11] p-4 rounded-2xl border border-[var(--ox-border)]">
               {c.text}
             </p>
           </div>

@@ -88,16 +88,5 @@ export function useMarket(id) {
     finally { setTxPending(false); }
   }
 
-  async function raiseDispute() {
-    setTxPending(true); setError(null); setTxHash(null);
-    try {
-      const c  = await getWriteContract();
-      const tx = await c.raiseDispute(id);
-      setTxHash(tx.hash);
-      await tx.wait();
-    } catch (err) { setError(err.message); }
-    finally { setTxPending(false); }
-  }
-
-  return { market, userShares, loading, txPending, txHash, error, buyShares, sellShares, claimReward, raiseDispute };
+  return { market, userShares, loading, txPending, txHash, error, buyShares, sellShares, claimReward };
 }
