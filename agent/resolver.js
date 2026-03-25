@@ -104,11 +104,11 @@ async function getJuryVerdict(model, role, marketInfo, evidence) {
       messages: [
         {
           role: "system",
-          content: `You are an AI Jury Member (${role}) resolving a prediction market. Use the provided news evidence to determine the outcome. Respond ONLY with a JSON object: {"outcome": true/false, "confidence": 0-100, "reasoning": "1 sentence explaination"}.`
+          content: `You are an AI Jury Member (${role}) resolving a prediction market. Determine which of the two options occurred based on news evidence. Respond ONLY with a JSON object: {"outcome": true/false, "confidence": 0-100, "reasoning": "1 sentence explaination"}. true = ${marketInfo.optionA}, false = ${marketInfo.optionB}.`
         },
         {
           role: "user",
-          content: `Evidence from Web Search:\n${evidence}\n\nQuestion: "${marketInfo.question}"\nCategory: ${marketInfo.category}`
+          content: `Evidence from Web Search:\n${evidence}\n\nQuestion: "${marketInfo.question}"\nOption A: "${marketInfo.optionA}"\nOption B: "${marketInfo.optionB}"\nCategory: ${marketInfo.category}`
         }
       ],
       max_tokens: 500
@@ -142,6 +142,7 @@ function calculateDAMM(market, articles, confidence) {
 }
 
 async function resolveMarket(id, question, category) {
+  const m = await market.getMarket(id);
   console.log(`\n[${new Date().toISOString()}] ⚖️ JURY TRIAL: Market ${id}: "${question}"`);
 
   const cache = articlesCache.get(id);
@@ -157,8 +158,8 @@ async function resolveMarket(id, question, category) {
     { model: "nvidia/nemotron-3-super-120b-a12b:free", role: "Fact-Checker" }
   ];
 
-  console.log(`  > Deliberating with ${juryMembers.length} AI agents...`);
-  const votes = await Promise.all(juryMembers.map(m => getJuryVerdict(m.model, m.role, { question, category }, evidenceText)));
+  console.log(`  > Deliberating between "${m.optionA}" and "${m.optionB}"...`);
+  const votes = await Promise.all(juryMembers.map(mem => getJuryVerdict(mem.model, mem.role, m, evidenceText)));
 
   const validVotes = votes.filter(v => v !== null);
   if (validVotes.length === 0) return;
@@ -170,7 +171,6 @@ async function resolveMarket(id, question, category) {
   const avgConfidence = Math.floor(validVotes.reduce((acc, v) => acc + v.confidence, 0) / validVotes.length);
   
   // Calculate DAMM Metrics
-  const m = await market.getMarket(id);
   const { marketHeat, sentimentScore } = calculateDAMM(m, articles, avgConfidence);
   
   // Calculate final DAMM Odds
@@ -215,10 +215,18 @@ async function handleNewBet(id) {
   }
 }
 
+// Listen for new markets being created
+console.log("Listening for MarketCreated events...");
+market.on("MarketCreated", (id, question, category, deadline, creator, minStake) => {
+  console.log(`\n[EVENT] MarketCreated: Market ${id} | Question: "${question}" | Category: ${category}`);
+  handleNewBet(id);
+});
+
 // Listen for new bets on-chain
 console.log("Listening for StakePlaced events...");
 market.on("StakePlaced", (id, user, side, amount) => {
   console.log(`\n[EVENT] StakePlaced: Market ${id} | User: ${user} | SHM: ${ethers.formatEther(amount)}`);
+  // Note: handleNewBet will re-calculate the remaining time and ensure scrapes are still scheduled.
   handleNewBet(id);
 });
 

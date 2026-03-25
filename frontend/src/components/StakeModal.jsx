@@ -29,15 +29,15 @@ export default function StakeModal({ market, onStake, txPending, txHash, error, 
         <div className="grid grid-cols-2 gap-4 mb-6">
           <button
             onClick={() => setSide("yes")}
-            className={`py-4 rounded-2xl font-bold text-lg transition-all border-2 ${side === "yes" ? "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/30 transform -translate-y-1" : "bg-white text-emerald-600 border-emerald-100 hover:border-emerald-300 hover:bg-emerald-50"}`}
+            className={`py-4 rounded-2xl font-bold text-lg transition-all border-2 uppercase ${side === "yes" ? "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/30 transform -translate-y-1" : "bg-white text-emerald-600 border-emerald-100 hover:border-emerald-300 hover:bg-emerald-50"}`}
           >
-            YES
+            {market.optionA}
           </button>
           <button
             onClick={() => setSide("no")}
-            className={`py-4 rounded-2xl font-bold text-lg transition-all border-2 ${side === "no" ? "bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-500/30 transform -translate-y-1" : "bg-white text-rose-600 border-rose-100 hover:border-rose-300 hover:bg-rose-50"}`}
+            className={`py-4 rounded-2xl font-bold text-lg transition-all border-2 uppercase ${side === "no" ? "bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-500/30 transform -translate-y-1" : "bg-white text-rose-600 border-rose-100 hover:border-rose-300 hover:bg-rose-50"}`}
           >
-            NO
+            {market.optionB}
           </button>
         </div>
 
@@ -74,7 +74,7 @@ export default function StakeModal({ market, onStake, txPending, txHash, error, 
           disabled={!side || !amount || txPending || Number(amount) < Number(minBet)}
           className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl font-bold text-lg hover:shadow-lg hover:shadow-purple-500/30 transition-all disabled:opacity-50 transform hover:-translate-y-0.5"
         >
-          {txPending ? "Confirming Transaction..." : side ? `Stake ${amount} SHM on ${side.toUpperCase()}` : "Select YES or NO"}
+          {txPending ? "Confirming Transaction..." : side ? `Stake ${amount} SHM on ${side === "yes" ? market.optionA : market.optionB}` : "Select Option"}
         </button>
       </div>
     </div>

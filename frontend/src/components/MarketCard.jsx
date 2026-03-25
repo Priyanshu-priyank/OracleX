@@ -60,7 +60,7 @@ export default function MarketCard({ market }) {
       {market.status === 1 && market.aiEvidence && (
         <div className="text-xs bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 rounded-xl p-3 text-amber-800 line-clamp-2 shadow-inner">
           <span className="font-bold">AI Verdict: </span>
-          {market.outcome ? "YES ✓" : "NO ✗"} — {market.aiEvidence}
+          {market.outcome ? `${market.optionA} ✓` : `${market.optionB} ✗`} — {market.aiEvidence}
         </div>
       )}
     </div>

@@ -7,12 +7,12 @@ export function useCreateMarket() {
   const [error,   setError]   = useState(null);
   const [txHash,  setTxHash]  = useState(null);
 
-  async function createMarket(question, category, durationHours, minStake) {
+  async function createMarket(question, category, optionA, optionB, durationHours, minStake) {
     setLoading(true); setError(null); setTxHash(null);
     try {
       const c      = await getWriteContract();
       const minStakeWei = ethers.parseEther(minStake.toString());
-      const tx     = await c.createMarket(question, category, durationHours, minStakeWei);
+      const tx     = await c.createMarket(question, category, optionA, optionB, durationHours, minStakeWei);
       setTxHash(tx.hash);
       const receipt = await tx.wait();
       

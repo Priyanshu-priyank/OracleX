@@ -1,13 +1,13 @@
 import { ethers } from "ethers";
 
-// ← PASTE YOUR DEPLOYED ADDRESSES HERE AFTER RUNNING deploy.js
-export const MARKET_ADDRESS = "0xYOUR_MARKET_ADDRESS";
+// ← Loaded from .env (VITE_MARKET_ADDRESS)
+export const MARKET_ADDRESS = import.meta.env.VITE_MARKET_ADDRESS;
 
 export const MARKET_ABI = [
   "function marketCount() view returns (uint256)",
-  "function getAllMarkets() view returns (tuple(uint256 id, string question, string category, uint256 deadline, address creator, uint8 status, bool outcome, string aiEvidence, uint256 yesPool, uint256 noPool, uint256 createdAt, uint256 minStake)[])",
-  "function getMarket(uint256) view returns (tuple(uint256 id, string question, string category, uint256 deadline, address creator, uint8 status, bool outcome, string aiEvidence, uint256 yesPool, uint256 noPool, uint256 createdAt, uint256 minStake))",
-  "function createMarket(string, string, uint256, uint256) returns (uint256)",
+  "function getAllMarkets() view returns (tuple(uint256 id, string question, string category, string optionA, string optionB, uint256 deadline, address creator, uint8 status, bool outcome, string aiEvidence, uint256 yesPool, uint256 noPool, uint256 createdAt, uint256 minStake)[])",
+  "function getMarket(uint256) view returns (tuple(uint256 id, string question, string category, string optionA, string optionB, uint256 deadline, address creator, uint8 status, bool outcome, string aiEvidence, uint256 yesPool, uint256 noPool, uint256 createdAt, uint256 minStake))",
+  "function createMarket(string, string, string, string, uint256, uint256) returns (uint256)",
   "function stake(uint256, bool) payable",
   "function claimReward(uint256)",
   "function raiseDispute(uint256)",

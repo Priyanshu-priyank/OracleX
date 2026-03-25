@@ -16,6 +16,8 @@ export function useMarkets() {
         id:          m.id.toString(),
         question:    m.question,
         category:    m.category,
+        optionA:     m.optionA,
+        optionB:     m.optionB,
         deadline:    m.deadline.toString(),
         creator:     m.creator,
         status:      Number(m.status),

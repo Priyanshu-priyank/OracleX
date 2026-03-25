@@ -8,15 +8,17 @@ contract PredictionMarket {
         uint256 id;
         string  question;
         string  category;
+        string  optionA;         // Default: "YES"
+        string  optionB;         // Default: "NO"
         uint256 deadline;
         address creator;
         Status  status;
-        bool    outcome;
-        string  aiEvidence;      // Claude's 2-sentence reasoning — stored forever on Shardeum
+        bool    outcome;         // true = Option A, false = Option B
+        string  aiEvidence; 
         uint256 yesPool;
         uint256 noPool;
         uint256 createdAt;
-        uint256 minStake;        // Enforced minimum bet added for new requirement
+        uint256 minStake;
     }
 
     uint256 public marketCount;
@@ -27,7 +29,7 @@ contract PredictionMarket {
     address public aiResolver;
     uint256 public constant PROTOCOL_FEE = 2; // 2%
 
-    event MarketCreated(uint256 indexed id, string question, string category, uint256 deadline, address creator, uint256 minStake);
+    event MarketCreated(uint256 indexed id, string question, string category, string optionA, string optionB, uint256 deadline, address creator, uint256 minStake);
     event StakePlaced(uint256 indexed id, address indexed user, bool side, uint256 amount);
     event MarketResolved(uint256 indexed id, bool outcome, string evidence, uint256 confidence);
     event DisputeRaised(uint256 indexed id, address indexed challenger);
@@ -45,20 +47,23 @@ contract PredictionMarket {
     function createMarket(
         string calldata _question,
         string calldata _category,
+        string calldata _optionA,
+        string calldata _optionB,
         uint256 _durationHours,
         uint256 _minStake
     ) external returns (uint256) {
         require(bytes(_question).length > 0, "Empty question");
+        require(bytes(_optionA).length > 0 && bytes(_optionB).length > 0, "Empty options");
         require(_durationHours >= 1 && _durationHours <= 8760, "Invalid duration");
-        
-        // Ensure at least min stake of 1000 in frontend's requested units. For ETH/SHM scale we will accept it directly.
-        require(_minStake >= 1000 * 10**18, "Minimum bet must be >= 1000 SHM");
+        require(_minStake >= 1000 * 10**18, "Min bet must be >= 1000 SHM");
 
         uint256 id = ++marketCount;
         markets[id] = Market({
             id:         id,
             question:   _question,
             category:   _category,
+            optionA:    _optionA,
+            optionB:    _optionB,
             deadline:   block.timestamp + (_durationHours * 1 hours),
             creator:    msg.sender,
             status:     Status.Open,
@@ -70,7 +75,7 @@ contract PredictionMarket {
             minStake:   _minStake
         });
 
-        emit MarketCreated(id, _question, _category, markets[id].deadline, msg.sender, _minStake);
+        emit MarketCreated(id, _question, _category, _optionA, _optionB, markets[id].deadline, msg.sender, _minStake);
         return id;
     }
 

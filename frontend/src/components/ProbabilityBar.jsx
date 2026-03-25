@@ -7,8 +7,8 @@ export default function ProbabilityBar({ market, size = "sm" }) {
   return (
     <div className="space-y-1.5 w-full">
       <div className="flex justify-between text-xs font-bold tracking-wide">
-        <span className="text-emerald-500">YES {pct}%</span>
-        <span className="text-rose-500">NO {100 - pct}%</span>
+        <span className="text-emerald-500 uppercase">{market.optionA || "YES"} {pct}%</span>
+        <span className="text-rose-500 uppercase">{market.optionB || "NO"} {100 - pct}%</span>
       </div>
       <div className={`w-full rounded-full bg-gray-100 overflow-hidden shadow-inner ${size === "lg" ? "h-3" : "h-2"}`}>
         <div
@@ -18,9 +18,9 @@ export default function ProbabilityBar({ market, size = "sm" }) {
       </div>
       {size === "lg" && (
         <div className="flex justify-between text-xs text-gray-400 pt-1 font-medium">
-          <span>{formatSHM(market.yesPool)} SHM YES</span>
+          <span>{formatSHM(market.yesPool)} {market.optionA || "YES"}</span>
           <span>Pool: {formatSHM(total)} SHM</span>
-          <span>{formatSHM(market.noPool)} SHM NO</span>
+          <span>{formatSHM(market.noPool)} {market.optionB || "NO"}</span>
         </div>
       )}
     </div>

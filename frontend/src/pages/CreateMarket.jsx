@@ -20,13 +20,15 @@ export default function CreateMarket() {
   const { createMarket, loading, error, txHash } = useCreateMarket();
 
   const [question,  setQuestion]  = useState("");
+  const [optionA,   setOptionA]   = useState("YES");
+  const [optionB,   setOptionB]   = useState("NO");
   const [category,  setCategory]  = useState("Crypto");
   const [duration,  setDuration]  = useState(24);
   const [minBet,    setMinBet]    = useState("1000"); // Minimum bet requirement
 
   const previewMarket = {
     id: "preview", question: question || "Your prediction question will appear here...",
-    category, deadline: Math.floor(Date.now() / 1000) + duration * 3600,
+    category, optionA, optionB, deadline: Math.floor(Date.now() / 1000) + duration * 3600,
     status: 0, outcome: false, aiEvidence: "", yesPool: "0", noPool: "0", createdAt: "0", minStake: ethers.parseEther(minBet || "1000").toString()
   };
 
@@ -36,7 +38,7 @@ export default function CreateMarket() {
       alert("Minimum bet must be at least 1000 SHM");
       return;
     }
-    const newId = await createMarket(question, category, duration, minBet);
+    const newId = await createMarket(question, category, optionA, optionB, duration, minBet);
     if (newId) navigate(`/market/${newId}`);
   }
 
@@ -67,6 +69,30 @@ export default function CreateMarket() {
                   className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 text-base text-gray-900 font-medium focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 resize-none transition-all"
                 />
                 <div className="text-xs font-semibold text-gray-400 text-right mt-2">{question.length}/280</div>
+              </div>
+
+              {/* Options */}
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-2">Option A (YES Equivalent)</label>
+                  <input
+                    type="text"
+                    value={optionA}
+                    onChange={e => setOptionA(e.target.value)}
+                    placeholder="e.g. Yes / Bullish / Won"
+                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-base font-bold text-gray-900 focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-900 mb-2">Option B (NO Equivalent)</label>
+                  <input
+                    type="text"
+                    value={optionB}
+                    onChange={e => setOptionB(e.target.value)}
+                    placeholder="e.g. No / Bearish / Lost"
+                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-base font-bold text-gray-900 focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all"
+                  />
+                </div>
               </div>
 
               {/* Category */}

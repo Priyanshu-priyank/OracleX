@@ -93,13 +93,13 @@ export default function MarketDetail() {
               {userStakes && (BigInt(userStakes.yes) > 0n || BigInt(userStakes.no) > 0n) && (
                 <div className="text-sm font-bold bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-indigo-800 flex items-center gap-2">
                   <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  Your current stake: {BigInt(userStakes.yes) > 0n ? `${formatSHM(userStakes.yes)} SHM on YES` : `${formatSHM(userStakes.no)} SHM on NO`}
+                  Your current stake: {BigInt(userStakes.yes) > 0n ? `${formatSHM(userStakes.yes)} SHM on ${market.optionA}` : `${formatSHM(userStakes.no)} SHM on ${market.optionB}`}
                 </div>
               )}
               
               <div className="grid grid-cols-2 gap-4">
-                <button onClick={() => setShowStake(true)} className="py-5 bg-gradient-to-br from-emerald-400 to-emerald-500 text-white rounded-2xl font-black text-xl hover:shadow-lg hover:shadow-emerald-500/30 transition-all transform hover:-translate-y-1">YES</button>
-                <button onClick={() => setShowStake(true)} className="py-5 bg-gradient-to-br from-rose-500 to-rose-600 text-white rounded-2xl font-black text-xl hover:shadow-lg hover:shadow-rose-500/30 transition-all transform hover:-translate-y-1">NO</button>
+                <button onClick={() => setShowStake(true)} className="py-5 bg-gradient-to-br from-emerald-400 to-emerald-500 text-white rounded-2xl font-black text-xl hover:shadow-lg hover:shadow-emerald-500/30 transition-all transform hover:-translate-y-1 uppercase">{market.optionA}</button>
+                <button onClick={() => setShowStake(true)} className="py-5 bg-gradient-to-br from-rose-500 to-rose-600 text-white rounded-2xl font-black text-xl hover:shadow-lg hover:shadow-rose-500/30 transition-all transform hover:-translate-y-1 uppercase">{market.optionB}</button>
               </div>
               <p className="text-sm font-medium text-gray-500 text-center flex items-center justify-center gap-1">
                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
