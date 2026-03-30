@@ -4,8 +4,8 @@ import { ethers } from "ethers";
 
 export function useCreateMarket() {
   const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState(null);
-  const [txHash,  setTxHash]  = useState(null);
+  const [error, setError] = useState(null);
+  const [txHash, setTxHash] = useState(null);
 
   async function createMarket(question, category, options, durationHours, minStake) {
     setLoading(true); setError(null); setTxHash(null);
@@ -17,7 +17,7 @@ export function useCreateMarket() {
         value: minStakeWei,
       });
       setTxHash(tx.hash);
-      
+
       // Mock contract returns id directly
       let newIdStr;
       if (tx.id !== undefined) {
@@ -50,7 +50,7 @@ export function useCreateMarket() {
       if (isSafeMode && newIdStr) {
         const gnewsKey = import.meta.env.VITE_GNEWS_API_KEY;
         const openAiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-        
+
         if (gnewsKey && openAiKey) {
           try {
             console.log(`[AI Validation] Checking news for "${question}"...`);
@@ -58,10 +58,14 @@ export function useCreateMarket() {
             const newsRes = await fetch(url);
             const newsData = await newsRes.json();
             const articles = newsData.articles || [];
-            
-            if (articles.length > 0) {
+
+            if (articles.length === 0) {
+              console.warn(`[AI Validation] No news articles found for "${question}". Deleting market ${newIdStr}...`);
+              await c.deleteMarket(newIdStr);
+              throw new Error("Market immediately deleted: No verifiable news information found for this event!");
+            } else {
               const headlines = articles.map(a => `- ${a.title}: ${a.description}`).join("\n");
-              
+
               const aiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
                 headers: {
@@ -70,25 +74,25 @@ export function useCreateMarket() {
                   "HTTP-Referer": window.location.origin
                 },
                 body: JSON.stringify({
-                  model: "google/gemini-2.5-flash",
+                  model: "nvidia/nemotron-3-super-120b-a12b:free",
                   messages: [
                     {
                       role: "system",
                       content: "You are an adjudicator for a prediction market. Your job is to determine if the event in the user's question has ALREADY OCCURRED based purely on the provided news headlines. Return EXACTLY 'YES' if the headlines prove the event already happened or the question is already fully resolved. Return 'NO' if it is a future event or unresolved."
                     },
                     {
-                      role: "user", 
+                      role: "user",
                       content: `Question: ${question}\n\nHeadlines:\n${headlines}`
                     }
                   ]
                 })
               });
-              
-              if (!aiRes.ok) throw new Error(`OpenRouter API Error: ${aiRes.status} - Replace the dummy API key in .env!`);
+
+              if (!aiRes.ok) throw new Error(`OpenRouter API Error: ${aiRes.status}`);
 
               const aiData = await aiRes.json();
               const reply = aiData.choices?.[0]?.message?.content?.trim().toUpperCase() || "";
-              
+
               if (reply.includes("YES")) {
                 console.warn(`[AI Validation] Event resolved matches found. Deleting market ${newIdStr}...`);
                 await c.deleteMarket(newIdStr);
@@ -97,8 +101,8 @@ export function useCreateMarket() {
             }
           } catch (err) {
             if (err.message.includes("Market immediately deleted")) throw err;
-            if (err.message.includes("OpenRouter API Error")) throw err;
             console.error("[AI Validation ERROR]", err);
+            // We'll proceed if it's just a 500 error from GNews, unless the user wants strictness
           }
         } else {
           console.warn("[AI Validation] Skipped: API keys not loaded (restart Vite server if you just added them).");
