@@ -12,8 +12,13 @@ export function useMarkets() {
   const [error,   setError]   = useState(null);
 
   const load = useCallback(async () => {
+    const contract = getReadContract();
+    if (!contract) {
+      setError("Contract not found. Please check MARKET_ADDRESS in .env");
+      setLoading(false);
+      return;
+    }
     try {
-      const contract = getReadContract();
       const raw = await contract.getAllMarkets();
       // Convert BigInt fields to strings for safe JSON/state
       const parsed = raw.map(m => ({

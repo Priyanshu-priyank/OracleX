@@ -3,7 +3,6 @@ import { mockContract } from "./MockContract";
 
 // ← Loaded from .env (VITE_MARKET_ADDRESS)
 export const MARKET_ADDRESS = import.meta.env.VITE_MARKET_ADDRESS;
-export const VITE_NFT_ADDRESS = import.meta.env.VITE_NFT_ADDRESS;
 
 // ← Set VITE_SAFE_MODE=true in .env to run without a real wallet
 export const IS_SAFE_MODE = import.meta.env.VITE_SAFE_MODE === "true";
@@ -21,11 +20,11 @@ export const MARKET_ABI = [
 ];
 
 export const SHARDEUM_CHAIN = {
-  chainId:         "0x1FE2",   // 8082 in hex for Shardeum Sphinx Testnet
-  chainName:       "Shardeum Sphinx Testnet",
+  chainId:         "0x1FB7",   // 8119 in hex for Shardeum Mezame Testnet
+  chainName:       "Shardeum Mezame Testnet",
   nativeCurrency:  { name: "SHM", symbol: "SHM", decimals: 18 },
-  rpcUrls:         ["https://sphinx.shardeum.org"],
-  blockExplorerUrls: ["https://explorer-sphinx.shardeum.org/"]
+  rpcUrls:         ["https://api-mezame.shardeum.org"],
+  blockExplorerUrls: ["https://explorer-mezame.shardeum.org/"]
 };
 
 export function getRPCProvider() {
@@ -34,11 +33,18 @@ export function getRPCProvider() {
 
 export function getReadContract() {
   if (IS_SAFE_MODE) return mockContract;
+  if (!MARKET_ADDRESS || !ethers.isAddress(MARKET_ADDRESS)) {
+    console.warn("MARKET_ADDRESS is missing or invalid. Check your .env file.");
+    return null;
+  }
   return new ethers.Contract(MARKET_ADDRESS, MARKET_ABI, getRPCProvider());
 }
 
 export async function getWriteContract() {
   if (IS_SAFE_MODE) return mockContract;
+  if (!MARKET_ADDRESS || !ethers.isAddress(MARKET_ADDRESS)) {
+    throw new Error("Cannot write: MARKET_ADDRESS is missing or invalid.");
+  }
 
   const provider = new ethers.BrowserProvider(window.ethereum);
   const signer   = await provider.getSigner();
@@ -46,9 +52,9 @@ export async function getWriteContract() {
 }
 
 export function explorerTx(hash) {
-  return `https://explorer-sphinx.shardeum.org/transaction/${hash}`;
+  return `https://explorer-mezame.shardeum.org/transaction/${hash}`;
 }
 
 export function explorerAddr(addr) {
-  return `https://explorer-sphinx.shardeum.org/account/${addr}`;
+  return `https://explorer-mezame.shardeum.org/account/${addr}`;
 }

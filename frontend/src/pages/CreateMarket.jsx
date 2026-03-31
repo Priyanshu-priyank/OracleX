@@ -45,19 +45,23 @@ export default function CreateMarket() {
     }
   };
 
+  const safeParse = (val, fallback) => {
+    try { return ethers.parseEther(val || fallback).toString(); } catch { return ethers.parseEther(fallback).toString(); }
+  };
+
   const previewMarket = {
     id: "preview",
     question: question || "Your question will appear here…",
     category,
-    options,
+    options: options.filter(o => o.trim().length > 0).length >= 2 ? options : ["YES", "NO"],
     deadline: Math.floor(Date.now() / 1000) + duration * 3600,
     status: 0,
     outcomeIndex: 0,
     aiEvidence: "",
-    shareReserves: options.map(() => ethers.parseEther(minBet || "1000").toString()),
-    totalSets: ethers.parseEther(minBet || "1000").toString(),
+    shareReserves: (options.length >= 2 ? options : ["YES", "NO"]).map(() => safeParse(minBet, "1000")),
+    totalSets: safeParse(minBet, "1000"),
     createdAt: "0",
-    minStake: ethers.parseEther(minBet || "1000").toString(),
+    minStake: safeParse(minBet, "1000"),
   };
 
   const addOption = () => {

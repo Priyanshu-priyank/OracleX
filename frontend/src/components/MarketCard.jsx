@@ -68,7 +68,7 @@ export default function MarketCard({ market }) {
         </span>
       </div>
 
-      {market.status === 1 && market.aiEvidence && market.options?.length > 0 && (
+      {market.status === 1 && market.aiEvidence && market.options?.[market.outcomeIndex] && (
         <div className="text-xs rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-amber-100 line-clamp-2">
           <span className="font-bold">Resolved: </span>
           {market.options[market.outcomeIndex]} — {market.aiEvidence}
