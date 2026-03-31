@@ -3,7 +3,9 @@ import { formatSHM } from "../utils/format";
 const PRECISION = BigInt(1e18);
 
 export default function ProbabilityBar({ market, size = "sm" }) {
-  const reserves = (market.shareReserves || []).map((r) => BigInt(r));
+  const reserves = (market.shareReserves || []).map((r) => {
+    try { return BigInt(r || "0"); } catch { return 0n; }
+  });
   const totalSets = BigInt(market.totalSets || "0");
   const n = market.options?.length || 0;
 
@@ -11,9 +13,11 @@ export default function ProbabilityBar({ market, size = "sm" }) {
   const sumInverses = inverseReserves.reduce((acc, v) => acc + v, 0n);
 
   const getPercent = (idx) => {
-    if (n === 0) return 0;
+    if (n === 0) return 50; // Default fallback
     if (sumInverses === 0n) return Math.floor(100 / n);
-    return Math.floor(Number((inverseReserves[idx] * 100n) / sumInverses));
+    // Ensure we have a valid index before BigInt math
+    const inv = inverseReserves[idx] || 0n;
+    return Math.floor(Number((inv * 100n) / sumInverses));
   };
 
   const colors = [

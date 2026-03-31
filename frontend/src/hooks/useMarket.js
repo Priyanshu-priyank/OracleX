@@ -126,5 +126,24 @@ export function useMarket(id) {
     finally { setTxPending(false); }
   }
 
-  return { market, userShares, walletBalance, loading, txPending, txHash, error, buyShares, sellShares, claimReward };
+  async function deleteMarket() {
+    setTxPending(true); setError(null); setTxHash(null);
+    try {
+      const c = await getWriteContract();
+      if (c.deleteMarket) {
+        const tx = await c.deleteMarket(id);
+        await tx.wait();
+      }
+      localStorage.removeItem(CACHE_KEY);
+      localStorage.removeItem("oraclex_markets_cache");
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    } finally {
+      setTxPending(false);
+    }
+  }
+
+  return { market, userShares, walletBalance, loading, txPending, txHash, error, buyShares, sellShares, claimReward, deleteMarket };
 }

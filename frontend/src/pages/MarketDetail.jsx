@@ -18,7 +18,7 @@ export default function MarketDetail() {
   const navigate = useNavigate();
   const [showStake, setShowStake] = useState(false);
   const [initialSide, setInitialSide] = useState(null);
-  const { market, userShares, walletBalance, loading, txPending, txHash, error, buyShares, sellShares, claimReward } = useMarket(id);
+  const { market, userShares, walletBalance, loading, txPending, txHash, error, buyShares, sellShares, claimReward, deleteMarket } = useMarket(id);
 
   if (loading) return <div className="min-h-screen bg-[var(--ox-bg)]"><Navbar /><div className="flex items-center justify-center h-[60vh] text-[var(--ox-muted)]">Loading…</div></div>;
   if (!market) return <div className="min-h-screen bg-[var(--ox-bg)]"><Navbar /><div className="flex items-center justify-center h-[60vh] text-[var(--ox-muted)]">Market not found.</div></div>;
